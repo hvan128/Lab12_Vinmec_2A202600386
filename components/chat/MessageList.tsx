@@ -22,6 +22,8 @@ interface MessageListProps {
   isStreaming?: boolean;
   onSuggestionPick: (q: string) => void;
   onActionClick: (value: string) => void;
+  onSelectDoctor?: (doctorId: string, doctorName: string) => void;
+  onSelectSlot?: (datetime: string) => void;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
@@ -30,6 +32,8 @@ export function MessageList({
   isStreaming = false,
   onSuggestionPick,
   onActionClick,
+  onSelectDoctor,
+  onSelectSlot,
   scrollContainerRef,
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -155,6 +159,8 @@ export function MessageList({
             onActionClick={
               msg.role === "assistant" && isLast ? onActionClick : undefined
             }
+            onSelectDoctor={msg.role === "assistant" ? onSelectDoctor : undefined}
+            onSelectSlot={msg.role === "assistant" ? onSelectSlot : undefined}
             showFeedback={showFeedback}
             query={feedbackQuery}
             toolsUsed={feedbackToolsUsed}

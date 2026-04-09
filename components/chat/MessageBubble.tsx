@@ -14,6 +14,8 @@ interface MessageBubbleProps {
   isLast?: boolean;
   isStreaming?: boolean;
   onActionClick?: (value: string) => void;
+  onSelectDoctor?: (doctorId: string, doctorName: string) => void;
+  onSelectSlot?: (datetime: string) => void;
   // Feedback props
   showFeedback?: boolean;
   query?: string;
@@ -21,11 +23,16 @@ interface MessageBubbleProps {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderToolOutput(toolName: string, output: any) {
+function renderToolOutput(
+  toolName: string,
+  output: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  onSelectDoctor?: (doctorId: string, doctorName: string) => void,
+  onSelectSlot?: (datetime: string) => void
+) {
   const normalized = toolName.startsWith("tool-") ? toolName.slice(5) : toolName;
 
   if (normalized === "list_doctors" && Array.isArray(output)) {
-    return <DoctorCardList doctors={output} />;
+    return <DoctorCardList doctors={output} onSelectDoctor={onSelectDoctor} />;
   }
 
   if (
@@ -34,13 +41,21 @@ function renderToolOutput(toolName: string, output: any) {
     typeof output === "object" &&
     Array.isArray(output.slots)
   ) {
-    return <SlotChipList slots={output.slots} doctorId={output.doctorId ?? ""} />;
+    return <SlotChipList slots={output.slots} doctorId={output.doctorId ?? ""} onSelectSlot={onSelectSlot} />;
   }
 
   return null;
 }
 
-function BotContent({ message }: { message: UIMessage }) {
+function BotContent({
+  message,
+  onSelectDoctor,
+  onSelectSlot,
+}: {
+  message: UIMessage;
+  onSelectDoctor?: (doctorId: string, doctorName: string) => void;
+  onSelectSlot?: (datetime: string) => void;
+}) {
   return (
     <div className="flex flex-col gap-2">
       {message.parts.map((part, i) => {
@@ -73,7 +88,7 @@ function BotContent({ message }: { message: UIMessage }) {
           // For done state on specific tools, render rich cards instead of badge
           if (s === "output-available") {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const richOutput = renderToolOutput(name, (part as any).output);
+            const richOutput = renderToolOutput(name, (part as any).output, onSelectDoctor, onSelectSlot);
             if (richOutput) {
               return <div key={i}>{richOutput}</div>;
             }
@@ -107,6 +122,8 @@ export function MessageBubble({
   isLast = false,
   isStreaming = false,
   onActionClick,
+  onSelectDoctor,
+  onSelectSlot,
   showFeedback = false,
   query = "",
   toolsUsed = [],
@@ -136,7 +153,11 @@ export function MessageBubble({
         <span className="text-xs text-vinmec-text-muted px-1">
           Trợ lý ảo VinmecCare
         </span>
-        <BotContent message={message} />
+        <BotContent
+          message={message}
+          onSelectDoctor={onSelectDoctor}
+          onSelectSlot={onSelectSlot}
+        />
         {actions.length > 0 && onActionClick && (
           <ActionButtons actions={actions} onAction={onActionClick} />
         )}

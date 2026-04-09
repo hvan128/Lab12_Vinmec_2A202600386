@@ -79,6 +79,31 @@ export function ChatScreen({ initialMessages = [] }: ChatScreenProps) {
     sendMessage({ text: value });
   };
 
+  const handleSelectDoctor = (doctorId: string, doctorName: string) => {
+    if (!user) return;
+    const text = `Tôi muốn xem lịch khám của bác sĩ ${doctorName} (ID: ${doctorId})`;
+    toast("Đã chọn bác sĩ", { duration: 1500, position: "top-center" });
+    sendMessage({ text });
+  };
+
+  const handleSelectSlot = (datetime: string) => {
+    if (!user) return;
+    const d = new Date(datetime);
+    const label = d.toLocaleString("vi-VN", {
+      timeZone: "Asia/Ho_Chi_Minh",
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    const text = `Tôi muốn đặt lịch vào khung giờ ${label}`;
+    toast("Đã chọn khung giờ", { duration: 1500, position: "top-center" });
+    sendMessage({ text });
+  };
+
   return (
     <PhoneFrame>
       {/* Use h-dvh for mobile keyboard handling (dynamic viewport height) */}
@@ -95,6 +120,8 @@ export function ChatScreen({ initialMessages = [] }: ChatScreenProps) {
             isStreaming={isLoading}
             onSuggestionPick={handleSuggestionPick}
             onActionClick={handleActionClick}
+            onSelectDoctor={handleSelectDoctor}
+            onSelectSlot={handleSelectSlot}
             scrollContainerRef={scrollContainerRef}
           />
         </div>
