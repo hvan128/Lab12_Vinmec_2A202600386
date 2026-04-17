@@ -59,7 +59,8 @@ services:
     image: ghcr.io/hvan128/lab12_vinmec_2a202600386:latest
     container_name: vinmec_migrate
     entrypoint: ["/bin/sh", "-c"]
-    command: ["./node_modules/.bin/prisma migrate deploy"]
+    # Gọi trực tiếp binary để tránh symlink .bin/prisma (symlink bị broken khi COPY).
+    command: ["node ./node_modules/prisma/build/index.js migrate deploy"]
     env_file:
       - .env
     depends_on:
