@@ -69,11 +69,12 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: vinmec_cloudflared
     restart: unless-stopped
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    # --protocol http2 fallback khi VPS firewall block outbound UDP/QUIC (mặc định cloudflared).
+    command: tunnel --no-autoupdate --protocol http2 run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
       app:
         condition: service_healthy
-    network_mode: host  # truy cập localhost:3000 trực tiếp
+    network_mode: host  # truy cập localhost:3003 trực tiếp
 
 volumes:
   postgres_data:
