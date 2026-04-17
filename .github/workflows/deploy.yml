@@ -123,7 +123,7 @@ jobs:
             NEXT_PUBLIC_APP_URL=https://lab12.hvan.it.com
             NEXT_PUBLIC_APP_NAME=Trợ lý ảo VinmecCare
             RATE_LIMIT_PER_MINUTE=10
-            MONTHLY_BUDGET_USD=10
+            MONTHLY_BUDGET_USD=0.5
             REQUIRE_AUTH=true
             APP_VERSION=${GITHUB_SHA:-unknown}
             EOF
