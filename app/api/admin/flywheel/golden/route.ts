@@ -3,6 +3,9 @@ import { prisma } from "@/lib/db/client";
 import { invalidateCache } from "@/lib/agent/golden-loader";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 const ADMIN_KEY = process.env.ADMIN_KEY ?? "vinmec-demo-2026";
 
 function checkAuth(req: NextRequest): boolean {

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/client";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 const ADMIN_KEY = process.env.ADMIN_KEY ?? "vinmec-demo-2026";
 const SYSTEM_SHORT =
   "Bạn là Trợ lý ảo VinmecCare — chatbot chính thức của Vinmec, hỗ trợ đặt lịch khám, tư vấn khoa phù hợp, và giải đáp thắc mắc về bệnh viện.";

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/client";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const users = await prisma.user.findMany({

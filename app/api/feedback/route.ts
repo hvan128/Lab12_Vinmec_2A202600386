@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 const feedbackSchema = z.object({
   userId: z.string(),
   messageId: z.string(),
