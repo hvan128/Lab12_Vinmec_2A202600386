@@ -122,10 +122,11 @@ jobs:
             # Pull latest images
             docker compose pull
 
-            # Run DB migrations (one-shot, exits on success)
-            docker compose --profile migrate run --rm migrate || {
-              echo "Migration failed"; exit 1;
-            }
+            # Run DB migrations — pass DATABASE_URL explicitly to guarantee Prisma sees it
+            DB_URL="postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/vinmec_ai?schema=public"
+            docker compose --profile migrate run --rm \
+              -e DATABASE_URL="$DB_URL" \
+              migrate || { echo "Migration failed"; exit 1; }
 
             # Roll to new version (rolling restart)
             docker compose up -d --remove-orphans
