@@ -72,5 +72,9 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+# lib/data/*.json used by prisma/seed.ts (departments, doctors, users, ...).
+COPY --from=builder /app/lib ./lib
 ENV NODE_ENV=production
-CMD ["node", "node_modules/prisma/build/index.js", "migrate", "deploy"]
+# Default command: apply schema migrations THEN seed data (idempotent upserts).
+CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node node_modules/prisma/build/index.js db seed"]
