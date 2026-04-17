@@ -40,16 +40,29 @@ jobs:
         run: |
           IMAGE="${REGISTRY}/${IMAGE_NAME,,}"
           echo "tags=${IMAGE}:latest,${IMAGE}:${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "migrate-tags=${IMAGE}-migrate:latest,${IMAGE}-migrate:${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
 
-      - name: Build & push
+      - name: Build & push app image (stage runtime)
         uses: docker/build-push-action@v5
         with:
           context: .
+          target: runtime
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=runtime
+          cache-to: type=gha,mode=max,scope=runtime
+          platforms: linux/amd64
+
+      - name: Build & push migrate image (stage migrate)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: migrate
+          push: true
+          tags: ${{ steps.meta.outputs.migrate-tags }}
+          cache-from: type=gha,scope=migrate
+          cache-to: type=gha,mode=max,scope=migrate
           platforms: linux/amd64
 
   # ─── Deploy: SSH VPS → pull → migrate → up ───────────────

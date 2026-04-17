@@ -53,14 +53,10 @@ services:
           memory: 1G
 
   migrate:
-    # One-shot: chạy prisma migrate deploy rồi thoát. GitHub Actions gọi `docker compose run migrate`.
-    # Dùng prisma CLI từ node_modules/.bin/ (copied vào runtime image) — tránh npx re-download
-    # vào temp location mà không thấy prisma.config.ts trong /app.
-    image: ghcr.io/hvan128/lab12_vinmec_2a202600386:latest
+    # Dedicated migrate image với full node_modules (prisma + tsx + effect + ...).
+    # Build từ Dockerfile stage `migrate`, push GHCR với tag `-migrate`.
+    image: ghcr.io/hvan128/lab12_vinmec_2a202600386-migrate:latest
     container_name: vinmec_migrate
-    entrypoint: ["/bin/sh", "-c"]
-    # Gọi trực tiếp binary để tránh symlink .bin/prisma (symlink bị broken khi COPY).
-    command: ["node ./node_modules/prisma/build/index.js migrate deploy"]
     env_file:
       - .env
     depends_on:

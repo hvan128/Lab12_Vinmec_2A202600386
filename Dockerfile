@@ -46,18 +46,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
+# Prisma runtime files (engines + generated client). CLI + migrate tooling lives in the
+# separate "migrate" stage below — keeps this runtime image lean.
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-# Prisma CLI + its runtime deps, needed for `prisma migrate deploy` and loading prisma.config.ts.
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-# tsx + esbuild are required to load prisma.config.ts at runtime
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/tsx ./node_modules/tsx
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/esbuild ./node_modules/esbuild
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/tsx ./node_modules/.bin/tsx
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/get-tsconfig ./node_modules/get-tsconfig
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/resolve-pkg-maps ./node_modules/resolve-pkg-maps
 
 USER nextjs
 EXPOSE 3000
@@ -68,3 +60,17 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 # tini handles SIGTERM → forward to node → Next.js graceful shutdown
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "server.js"]
+
+
+# ─── Stage 4: migrate (separate image with full node_modules) ────
+# Dùng cho `docker compose run migrate` — chứa đầy đủ prisma + deps.
+# Tách image để main app giữ < 500 MB.
+FROM node:20-alpine AS migrate
+RUN apk add --no-cache libc6-compat openssl
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder /app/package.json ./package.json
+ENV NODE_ENV=production
+CMD ["node", "node_modules/prisma/build/index.js", "migrate", "deploy"]
