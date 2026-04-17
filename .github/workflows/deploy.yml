@@ -132,21 +132,13 @@ jobs:
             # Login to GHCR so we can pull the private image
             echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
 
-            # Pull latest images (including services under profiles)
-            docker compose pull
-            docker compose --profile migrate pull migrate
+            # Pull latest images for all services (including tunnel profile).
+            docker compose --profile tunnel pull
 
-            # Run DB migrations — pass DATABASE_URL explicitly as single-line cmd.
-            DB_URL="postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/vinmec_ai?schema=public"
-            echo "DATABASE_URL set: ${DB_URL:+yes} (length=${#DB_URL})"
-            if ! docker compose --profile migrate run --rm -e DATABASE_URL="$DB_URL" migrate; then
-              echo "Migration failed — dumping migrate container env:"
-              docker compose --profile migrate run --rm -e DATABASE_URL="$DB_URL" --entrypoint "sh" migrate -c "env | grep -i -E 'database|postgres'" || true
-              exit 1
-            fi
-
-            # Roll to new version (rolling restart)
-            docker compose up -d --remove-orphans
+            # Roll to new version — migrate tự động chạy trước app nhờ
+            # depends_on.migrate.condition=service_completed_successfully.
+            # Tunnel activated bằng profile.
+            docker compose --profile tunnel up -d --remove-orphans
 
             # Wait for health (probe bên ngoài container — VPS port 3003)
             for i in $(seq 1 30); do

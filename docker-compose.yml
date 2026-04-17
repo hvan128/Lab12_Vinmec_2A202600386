@@ -23,10 +23,11 @@ services:
       retries: 5
 
   app:
-    # Production: pull image đã build sẵn trên GitHub Actions (GHCR).
-    # Dev local: uncomment dòng `build` để build tại chỗ.
+    # Prod: pull từ GHCR. Local: build tự động nếu không có image (build: fallback).
     image: ghcr.io/hvan128/lab12_vinmec_2a202600386:latest
-    # build: .
+    build:
+      context: .
+      target: runtime
     container_name: vinmec_app
     restart: unless-stopped
     # VPS host port 3003 → container port 3000 (Next.js standalone).
@@ -40,6 +41,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
       interval: 30s
@@ -55,7 +58,11 @@ services:
   migrate:
     # Dedicated migrate image với full node_modules (prisma + tsx + effect + ...).
     # Build từ Dockerfile stage `migrate`, push GHCR với tag `-migrate`.
+    # Auto-runs before app starts (service_completed_successfully dependency).
     image: ghcr.io/hvan128/lab12_vinmec_2a202600386-migrate:latest
+    build:
+      context: .
+      target: migrate
     container_name: vinmec_migrate
     env_file:
       - .env
@@ -63,8 +70,9 @@ services:
       db:
         condition: service_healthy
     restart: "no"
-    profiles: ["migrate"]
 
+  # Only start cloudflared on prod VPS: `docker compose --profile tunnel up -d`.
+  # Local dev / người clone repo: bỏ qua, chạy `docker compose up --build` trực tiếp.
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: vinmec_cloudflared
@@ -75,6 +83,7 @@ services:
       app:
         condition: service_healthy
     network_mode: host  # truy cập localhost:3003 trực tiếp
+    profiles: ["tunnel"]
 
 volumes:
   postgres_data:
