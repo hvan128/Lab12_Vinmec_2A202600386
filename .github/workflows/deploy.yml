@@ -132,8 +132,9 @@ jobs:
             # Login to GHCR so we can pull the private image
             echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
 
-            # Pull latest images
+            # Pull latest images (including services under profiles)
             docker compose pull
+            docker compose --profile migrate pull migrate
 
             # Run DB migrations — pass DATABASE_URL explicitly as single-line cmd.
             DB_URL="postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/vinmec_ai?schema=public"
