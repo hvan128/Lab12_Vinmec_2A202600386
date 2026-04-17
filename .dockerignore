@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.github
+.env
+.env.*
+!.env.example
+*.md
+!README.md
+.DS_Store
+coverage
+.vscode
+.idea
+cloudflared
+cloudflared.tgz
+tsconfig.tsbuildinfo
+lib/generated/prisma

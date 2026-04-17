@@ -1,48 +1,88 @@
 version: "3.9"
 
+# ============================================================
+# Vinmec AI Agent — Production stack on VPS (Lab 12)
+# Public URL: https://lab12.hvan.it.com (via Cloudflare Tunnel)
+# ============================================================
+
 services:
   db:
     image: postgres:16-alpine
     container_name: vinmec_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: vinmec_ai
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-vinmec_ai}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   app:
-    build: .
+    # Production: pull image đã build sẵn trên GitHub Actions (GHCR).
+    # Dev local: uncomment dòng `build` để build tại chỗ.
+    image: ghcr.io/hvan128/lab12_vinmec_2a202600386:latest
+    # build: .
     container_name: vinmec_app
     restart: unless-stopped
+    # VPS host port 3003 → container port 3000 (Next.js standalone).
+    # Cloudflare Tunnel (network_mode: host) trỏ về http://localhost:3003
     ports:
-      - "3000:3000"
+      - "3003:3000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/vinmec_ai?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-vinmec_ai}?schema=public
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://nhom62-lab6-vinmec.hvan.it.com}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      AGENT_API_KEY: ${AGENT_API_KEY}
+      ADMIN_KEY: ${ADMIN_KEY}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://lab12.hvan.it.com}
       NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Trợ lý ảo VinmecCare}
+      APP_VERSION: ${APP_VERSION:-1.0.0}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-10}
+      MONTHLY_BUDGET_USD: ${MONTHLY_BUDGET_USD:-10}
+      REQUIRE_AUTH: ${REQUIRE_AUTH:-true}
+      NODE_ENV: production
     depends_on:
-      - db
-    profiles:
-      - full
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
-  # ──────────────────────────────────────────────
-  # Cloudflare Tunnel
-  # Public URL: https://nhom62-lab6-vinmec.hvan.it.com
-  # ──────────────────────────────────────────────
+  migrate:
+    # One-shot: chạy prisma migrate deploy rồi thoát. GitHub Actions gọi `docker compose run migrate`.
+    image: ghcr.io/hvan128/lab12_vinmec_2a202600386:latest
+    container_name: vinmec_migrate
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["npx prisma migrate deploy"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-vinmec_ai}?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    profiles: ["migrate"]
+
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: vinmec_cloudflared
     restart: unless-stopped
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
-      - app
-    profiles:
-      - full
+      app:
+        condition: service_healthy
     network_mode: host  # truy cập localhost:3000 trực tiếp
 
 volumes:

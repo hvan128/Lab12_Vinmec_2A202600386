@@ -1,0 +1,168 @@
+name: Build & Deploy (Lab 12)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ─── Build & push image to GHCR ───────────────────────────
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image tags
+        id: meta
+        run: |
+          IMAGE="${REGISTRY}/${IMAGE_NAME,,}"
+          echo "tags=${IMAGE}:latest,${IMAGE}:${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+  # ─── Deploy: SSH VPS → pull → migrate → up ───────────────
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure VPS deploy folder exists
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: mkdir -p /opt/lab12-vinmec
+
+      - name: Copy compose + env to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "/opt/lab12-vinmec"
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          AGENT_API_KEY: ${{ secrets.AGENT_API_KEY }}
+          ADMIN_KEY: ${{ secrets.ADMIN_KEY }}
+          CLOUDFLARE_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: OPENAI_API_KEY,AGENT_API_KEY,ADMIN_KEY,CLOUDFLARE_TUNNEL_TOKEN,POSTGRES_PASSWORD,GHCR_TOKEN,GITHUB_ACTOR
+          script: |
+            set -euo pipefail
+            cd /opt/lab12-vinmec
+
+            # Write .env atomically
+            umask 077
+            cat > .env.tmp <<EOF
+            OPENAI_API_KEY=${OPENAI_API_KEY}
+            OPENAI_MODEL=gpt-4o-mini
+            AGENT_API_KEY=${AGENT_API_KEY}
+            ADMIN_KEY=${ADMIN_KEY}
+            CLOUDFLARE_TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+            POSTGRES_USER=postgres
+            POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            POSTGRES_DB=vinmec_ai
+            NEXT_PUBLIC_APP_URL=https://lab12.hvan.it.com
+            NEXT_PUBLIC_APP_NAME=Trợ lý ảo VinmecCare
+            RATE_LIMIT_PER_MINUTE=10
+            MONTHLY_BUDGET_USD=10
+            REQUIRE_AUTH=true
+            APP_VERSION=${GITHUB_SHA:-unknown}
+            EOF
+            mv .env.tmp .env
+
+            # Login to GHCR so we can pull the private image
+            echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+
+            # Pull latest images
+            docker compose pull
+
+            # Run DB migrations (one-shot, exits on success)
+            docker compose --profile migrate run --rm migrate || {
+              echo "Migration failed"; exit 1;
+            }
+
+            # Roll to new version (rolling restart)
+            docker compose up -d --remove-orphans
+
+            # Wait for health (probe bên ngoài container — VPS port 3003)
+            for i in $(seq 1 30); do
+              if curl -fsS http://localhost:3003/api/health >/dev/null 2>&1; then
+                echo "✅ App is healthy on :3003"
+                break
+              fi
+              [ "$i" = "30" ] && { echo "❌ App never became healthy"; docker compose logs --tail=100 app; exit 1; }
+              sleep 2
+            done
+
+            # Clean up old images
+            docker image prune -f
+
+  # ─── Post-deploy smoke test against public URL ───────────
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check /api/health
+        run: |
+          for i in {1..10}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://lab12.hvan.it.com/api/health)
+            [ "$STATUS" = "200" ] && echo "✅ health OK" && exit 0
+            echo "Attempt $i: HTTP $STATUS — retrying in 5s"
+            sleep 5
+          done
+          echo "❌ /api/health never returned 200"; exit 1
+
+      - name: Check auth enforcement on /api/chat
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST https://lab12.hvan.it.com/api/chat \
+            -H "Content-Type: application/json" -d '{"messages":[],"userId":"ci"}')
+          if [ "$STATUS" = "401" ]; then
+            echo "✅ /api/chat correctly returns 401 without API key"
+          else
+            echo "❌ expected 401, got $STATUS"; exit 1
+          fi

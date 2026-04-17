@@ -5,6 +5,13 @@ import { tools } from "@/lib/agent/tools";
 import { getSystemPrompt } from "@/lib/agent/system-prompt";
 import { AGENT_CONFIG } from "@/lib/agent/config";
 import { scoreAsync } from "@/lib/agent/judge";
+import { verifyApiKey, authErrorResponse } from "@/lib/auth";
+import { checkRateLimit, rateLimitErrorResponse } from "@/lib/rateLimit";
+import {
+  checkBudget,
+  recordUsage,
+  budgetErrorResponse,
+} from "@/lib/costGuard";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -51,6 +58,16 @@ function normalizeMessages(raw: unknown[]): Omit<UIMessage, "id">[] {
 }
 
 export async function POST(req: Request) {
+  // ── Lab 12: Auth + Rate limit + Cost guard ──────────────
+  const auth = verifyApiKey(req);
+  if (!auth.ok) return authErrorResponse(auth);
+
+  const rl = checkRateLimit(auth.keyId);
+  if (!rl.ok) return rateLimitErrorResponse(rl);
+
+  const budget = checkBudget(auth.keyId);
+  if (!budget.ok) return budgetErrorResponse(budget);
+
   let body: { messages?: unknown[]; userId?: string };
   try {
     body = await req.json();
@@ -116,13 +133,17 @@ export async function POST(req: Request) {
     },
   });
 
-  // Fire-and-forget judge scoring after stream completes
-  Promise.all([result.text, result.toolCalls])
-    .then(([botText, calls]) => {
+  // Fire-and-forget: judge scoring + cost guard usage recording after stream completes.
+  Promise.all([result.text, result.toolCalls, result.usage])
+    .then(([botText, calls, usage]) => {
       const toolNames = calls.map((c) => c.toolName);
       scoreAsync(userId, userQuery, botText, toolNames);
+      if (usage && typeof usage === "object") {
+        const u = usage as { inputTokens?: number; outputTokens?: number };
+        recordUsage(auth.keyId, u.inputTokens ?? 0, u.outputTokens ?? 0);
+      }
     })
-    .catch((e) => console.error("[chat] judge fire error:", e));
+    .catch((e) => console.error("[chat] post-stream error:", e));
 
   return result.toUIMessageStreamResponse();
 }
