@@ -20,7 +20,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV NEXT_TELEMETRY_DISABLED=1
+# Placeholder env vars — only used at build time to let Next.js collect page data
+# without crashing on module-level Prisma init. Real values injected at runtime.
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    DATABASE_URL="postgresql://build:build@localhost:5432/build" \
+    OPENAI_API_KEY="sk-build-placeholder" \
+    SKIP_ENV_VALIDATION=1
+
 RUN npx prisma generate
 RUN npm run build
 
