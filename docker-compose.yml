@@ -33,18 +33,9 @@ services:
     # Cloudflare Tunnel (network_mode: host) trỏ về http://localhost:3003
     ports:
       - "3003:3000"
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-vinmec_ai}?schema=public
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
-      AGENT_API_KEY: ${AGENT_API_KEY}
-      ADMIN_KEY: ${ADMIN_KEY}
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://lab12.hvan.it.com}
-      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Trợ lý ảo VinmecCare}
-      APP_VERSION: ${APP_VERSION:-1.0.0}
-      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-10}
-      MONTHLY_BUDGET_USD: ${MONTHLY_BUDGET_USD:-10}
-      REQUIRE_AUTH: ${REQUIRE_AUTH:-true}
       NODE_ENV: production
     depends_on:
       db:
@@ -66,9 +57,9 @@ services:
     image: ghcr.io/hvan128/lab12_vinmec_2a202600386:latest
     container_name: vinmec_migrate
     entrypoint: ["/bin/sh", "-c"]
-    command: ["npx prisma migrate deploy"]
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-vinmec_ai}?schema=public
+    command: ["echo \"Using DATABASE_URL=${DATABASE_URL%%:*}:***@...\" && npx prisma migrate deploy"]
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy

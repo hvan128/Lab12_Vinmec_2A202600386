@@ -95,9 +95,10 @@ jobs:
             set -euo pipefail
             cd /opt/lab12-vinmec
 
-            # Write .env atomically
+            # Write .env atomically. DATABASE_URL must be complete (Prisma 7 reads it from env).
             umask 077
             cat > .env.tmp <<EOF
+            DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/vinmec_ai?schema=public
             OPENAI_API_KEY=${OPENAI_API_KEY}
             OPENAI_MODEL=gpt-4o-mini
             AGENT_API_KEY=${AGENT_API_KEY}
