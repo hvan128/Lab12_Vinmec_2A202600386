@@ -27,7 +27,7 @@
     "phone": "0236 3711 111",
     "lat": 16.0292,
     "lng": 108.2108,
-    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
+    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "than-kinh", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
   },
   {
     "id": "nha-trang",
@@ -57,7 +57,7 @@
     "phone": "0203 3828 188",
     "lat": 20.9630,
     "lng": 107.0432,
-    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
+    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "than-kinh", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
   },
   {
     "id": "hai-phong",
@@ -67,7 +67,7 @@
     "phone": "0225 3730 888",
     "lat": 20.8446,
     "lng": 106.6881,
-    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
+    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "than-kinh", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
   },
   {
     "id": "smart-city",
@@ -87,7 +87,7 @@
     "phone": "024 3976 6699",
     "lat": 20.9803,
     "lng": 105.9337,
-    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
+    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "than-kinh", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
   },
   {
     "id": "can-tho",
@@ -97,6 +97,6 @@
     "phone": "0292 3888 999",
     "lat": 10.0453,
     "lng": 105.7469,
-    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
+    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "than-kinh", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
   }
 ]

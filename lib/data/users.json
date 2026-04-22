@@ -78,5 +78,55 @@
     "medicalNotes": "Tiền sử khỏe mạnh, đến khám do đau mắt và giảm thị lực. Nghi ngờ glôcôm góc mở, cần đo nhãn áp và soi đáy mắt định kỳ.",
     "username": "huong",
     "password": "huong123"
+  },
+  {
+    "id": "user-lan",
+    "name": "Nguyễn Thị Lan",
+    "age": 30,
+    "gender": "female",
+    "avatarUrl": null,
+    "medicalNotes": "Thai kỳ 28 tuần, thai phụ nguy cơ thấp. Tiền sử sảy thai lần 1 năm 2023. Theo dõi định kỳ tại Khoa Sản, đường huyết thai kỳ bình thường, huyết áp ổn định.",
+    "username": "lan",
+    "password": "lan123"
+  },
+  {
+    "id": "user-khanh",
+    "name": "Vũ Mạnh Khánh",
+    "age": 55,
+    "gender": "male",
+    "avatarUrl": null,
+    "medicalNotes": "Ung thư đại tràng giai đoạn IIB (phát hiện 2025), đã phẫu thuật cắt đoạn đại tràng sigma tháng 3/2026, đang hóa trị phác đồ FOLFOX. Tái khám ung bướu mỗi 3 tuần.",
+    "username": "khanh",
+    "password": "khanh123"
+  },
+  {
+    "id": "user-mai",
+    "name": "Đặng Thị Mai",
+    "age": 61,
+    "gender": "female",
+    "avatarUrl": null,
+    "medicalNotes": "Bệnh thận mãn tính giai đoạn 3B (eGFR 32 ml/phút), tăng huyết áp thứ phát. Chế độ ăn hạn chế protein và kali. Xét nghiệm chức năng thận mỗi 3 tháng, theo dõi tại Khoa Thận - Tiết niệu.",
+    "username": "mai",
+    "password": "mai123"
+  },
+  {
+    "id": "user-nam",
+    "name": "Trần Quang Nam",
+    "age": 24,
+    "gender": "male",
+    "avatarUrl": null,
+    "medicalNotes": "Rối loạn trầm cảm nặng (chẩn đoán 2025), đang điều trị bằng Sertraline 100mg/ngày và liệu pháp tâm lý hàng tuần. Tiền sử tự làm hại bản thân, cần theo dõi chặt.",
+    "username": "nam",
+    "password": "nam123"
+  },
+  {
+    "id": "user-tuan",
+    "name": "Lý Văn Tuấn",
+    "age": 70,
+    "gender": "male",
+    "avatarUrl": null,
+    "medicalNotes": "Suy tim EF giảm (EF 35%), rung nhĩ mãn tính đang dùng Warfarin (INR mục tiêu 2-3), đái tháo đường type 2. Đa bệnh lý, theo dõi tại Khoa Tim mạch và Nội tổng quát.",
+    "username": "tuan",
+    "password": "tuan123"
   }
 ]
