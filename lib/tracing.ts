@@ -37,11 +37,18 @@ export const tracer: Tracer = trace.getTracer(SERVICE_NAME, "1.0.0");
 export const LLM_PRICES = {
   inputPer1M: 0.15,
   outputPer1M: 0.60,
+  cachedInputPer1M: 0.075, // OpenAI prefix cache: 50% discount on input
 } as const;
 
-export function calcLLMCost(inputTokens: number, outputTokens: number): number {
+export function calcLLMCost(
+  inputTokens: number,
+  outputTokens: number,
+  cachedInputTokens = 0,
+): number {
+  const uncachedInput = Math.max(0, inputTokens - cachedInputTokens);
   return (
-    (inputTokens / 1_000_000) * LLM_PRICES.inputPer1M +
+    (uncachedInput / 1_000_000) * LLM_PRICES.inputPer1M +
+    (cachedInputTokens / 1_000_000) * LLM_PRICES.cachedInputPer1M +
     (outputTokens / 1_000_000) * LLM_PRICES.outputPer1M
   );
 }

@@ -2,7 +2,6 @@ import { openai } from "@ai-sdk/openai";
 import { streamText, convertToModelMessages, stepCountIs } from "ai";
 import type { UIMessage } from "ai";
 import { tools } from "@/lib/agent/tools";
-import { getSystemPrompt } from "@/lib/agent/system-prompt";
 import { AGENT_CONFIG } from "@/lib/agent/config";
 import { scoreAsync } from "@/lib/agent/judge";
 import { verifyApiKey, authErrorResponse } from "@/lib/auth";
@@ -14,7 +13,8 @@ import {
   estimateRequestInputTokens,
   estimateOutputTokens,
 } from "@/lib/costGuard";
-import { tracer, calcLLMCost, SpanStatusCode } from "@/lib/tracing";
+import { tracer, calcLLMCost, SpanStatusCode, LLM_PRICES } from "@/lib/tracing";
+import { getCachedSystemPrompt, STATIC_PREFIX_TOKENS } from "@/lib/promptCache";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -99,8 +99,10 @@ export async function POST(req: Request) {
   const nowVN = new Date(Date.now() + 7 * 3600 * 1000);
   const todayVN = nowVN.toISOString().slice(0, 10); // YYYY-MM-DD
 
-  // Load base prompt + golden examples (cached 60s)
-  const basePrompt = await getSystemPrompt();
+  // Load base prompt + golden examples — app-level cache (60s TTL).
+  // Identical string across requests → OpenAI prefix cache hits the static
+  // ~3 500-token prefix at 50% discount.
+  const { prompt: basePrompt, appCacheHit } = await getCachedSystemPrompt();
   const systemWithUser = `${basePrompt}\n\nNgày hôm nay (giờ Việt Nam): ${todayVN}\nUSER_ID hiện tại: ${userId}`;
 
   const normalized = normalizeMessages(messages);
@@ -147,6 +149,13 @@ export async function POST(req: Request) {
   if (!budgetCheck.ok) return budgetErrorResponse(budgetCheck);
 
   // ── LLM call with tracing span ───────────────────────────
+  // When app cache is warm the system prompt string is identical to the
+  // previous request, so OpenAI's prefix cache should cover STATIC_PREFIX_TOKENS.
+  const estCachedTokens = appCacheHit ? STATIC_PREFIX_TOKENS : 0;
+  const estCacheSavingsUsd =
+    (estCachedTokens / 1_000_000) *
+    (LLM_PRICES.inputPer1M - LLM_PRICES.cachedInputPer1M);
+
   const llmSpan = tracer.startSpan("llm.agent", {
     attributes: {
       "llm.model": AGENT_CONFIG.model,
@@ -154,6 +163,9 @@ export async function POST(req: Request) {
       "llm.est_output_tokens": estOutputTokens,
       "llm.user_id": userId,
       "llm.messages_count": messages.length,
+      "prompt.app_cache_hit": appCacheHit,
+      "prompt.est_cached_tokens": estCachedTokens,
+      "prompt.est_cache_savings_usd": estCacheSavingsUsd,
     },
   });
 
@@ -177,20 +189,34 @@ export async function POST(req: Request) {
       scoreAsync(userId, userQuery, botText, toolNames);
 
       if (usage && typeof usage === "object") {
-        const u = usage as { inputTokens?: number; outputTokens?: number };
+        const u = usage as {
+          inputTokens?: number;
+          outputTokens?: number;
+          // OpenAI returns cached_tokens inside prompt_tokens_details;
+          // the AI SDK may surface it here as cachedInputTokens.
+          cachedInputTokens?: number;
+        };
         const inputTokens = u.inputTokens ?? 0;
         const outputTokens = u.outputTokens ?? 0;
-        const cost = calcLLMCost(inputTokens, outputTokens);
+        // Prefer actual cached tokens from API; fall back to app-cache estimate.
+        const cachedInputTokens =
+          u.cachedInputTokens ?? (appCacheHit ? estCachedTokens : 0);
+        const cost = calcLLMCost(inputTokens, outputTokens, cachedInputTokens);
+        const cacheSavingsUsd =
+          (cachedInputTokens / 1_000_000) *
+          (LLM_PRICES.inputPer1M - LLM_PRICES.cachedInputPer1M);
 
         llmSpan.setAttributes({
           "llm.input_tokens": inputTokens,
           "llm.output_tokens": outputTokens,
           "llm.total_tokens": inputTokens + outputTokens,
+          "llm.cached_input_tokens": cachedInputTokens,
           "llm.cost_usd": cost,
+          "llm.cache_savings_usd": cacheSavingsUsd,
           "llm.tools_called": calls.length,
         });
 
-        recordUsage(auth.keyId, inputTokens, outputTokens);
+        recordUsage(auth.keyId, inputTokens, outputTokens, cachedInputTokens);
       }
 
       llmSpan.setStatus({ code: SpanStatusCode.OK });

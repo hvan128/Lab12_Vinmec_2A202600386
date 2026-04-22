@@ -117,6 +117,7 @@ export function recordUsage(
   key: string,
   inputTokens: number,
   outputTokens: number,
+  cachedInputTokens = 0,
 ) {
   return tracer.startActiveSpan(
     "budget.record_usage",
@@ -125,11 +126,12 @@ export function recordUsage(
         "budget.key": key,
         "llm.input_tokens": inputTokens,
         "llm.output_tokens": outputTokens,
+        "llm.cached_input_tokens": cachedInputTokens,
       },
     },
     (span) => {
       try {
-        const cost = calcLLMCost(inputTokens, outputTokens);
+        const cost = calcLLMCost(inputTokens, outputTokens, cachedInputTokens);
         span.setAttribute("llm.cost_usd", cost);
 
         const month = currentMonth();
