@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VinmecCare AI Agent — Poster</title>
+<style>
+  :root {
+    --bg: #070c1a;
+    --card: #0d1526;
+    --card2: #111d35;
+    --border: #1e3058;
+    --cyan: #00d4ff;
+    --cyan2: #0099bb;
+    --purple: #7c3aed;
+    --green: #10b981;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --dim: #94a3b8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 11px;
+    line-height: 1.4;
+    min-height: 100vh;
+    padding: 14px;
+  }
+
+  .poster {
+    max-width: 1380px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 10px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0d1f4e 0%, #0a1830 50%, #0d1040 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(0,212,255,.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-left { flex: 1; }
+  .header-left h1 {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #00d4ff, #7c3aed);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .header-left .tagline {
+    font-size: 12px; color: var(--dim); margin-top: 3px;
+    font-style: italic;
+  }
+  .header-right { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .badges { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; }
+  .badge {
+    background: rgba(0,212,255,.1); border: 1px solid rgba(0,212,255,.25);
+    color: var(--cyan); border-radius: 20px; padding: 3px 9px;
+    font-size: 10px; font-weight: 600; letter-spacing: .3px;
+  }
+  .badge.purple { background: rgba(124,58,237,.12); border-color: rgba(124,58,237,.3); color: #a78bfa; }
+  .badge.green  { background: rgba(16,185,129,.1);  border-color: rgba(16,185,129,.25); color: #34d399; }
+  .badge.orange { background: rgba(245,158,11,.1);  border-color: rgba(245,158,11,.25); color: #fbbf24; }
+  .live {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10.5px; color: var(--green);
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* ── MAIN GRID ── */
+  .main {
+    display: grid;
+    grid-template-columns: 300px 1fr 310px;
+    gap: 10px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px;
+  }
+  .card-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--cyan);
+    margin-bottom: 10px; padding-bottom: 7px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .card-title span { font-size: 13px; }
+
+  /* ── COL 1: TOOLS ── */
+  .col1 { display: flex; flex-direction: column; gap: 8px; }
+
+  .tool-group { margin-bottom: 4px; }
+  .tool-group-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--purple);
+    margin-bottom: 5px; opacity: .85;
+  }
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .tool-item {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 7px;
+    display: flex; align-items: flex-start; gap: 5px;
+  }
+  .tool-icon { font-size: 11px; margin-top: 1px; flex-shrink: 0; }
+  .tool-name {
+    font-size: 9.5px; font-weight: 600; color: #7dd3fc;
+    font-family: 'Courier New', monospace;
+  }
+  .tool-desc { font-size: 9px; color: var(--dim); margin-top: 1px; }
+
+  /* flow diagram */
+  .flow { display: flex; flex-direction: column; gap: 3px; }
+  .flow-step {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 8px;
+  }
+  .flow-num {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: linear-gradient(135deg,var(--cyan),var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .flow-text { font-size: 9.5px; color: var(--dim); }
+  .flow-text strong { color: var(--text); }
+  .flow-arrow { text-align: center; color: var(--border); font-size: 10px; line-height: 1; }
+
+  /* ── COL 2: MIDDLE ── */
+  .col2 { display: flex; flex-direction: column; gap: 8px; }
+
+  /* lifecycle */
+  .lifecycle {
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .lc-row {
+    display: grid; grid-template-columns: 22px 1fr auto;
+    align-items: center; gap: 7px;
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 8px;
+  }
+  .lc-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; flex-shrink: 0;
+  }
+  .lc-num.auth   { background: rgba(0,212,255,.15); color: var(--cyan); }
+  .lc-num.rate   { background: rgba(245,158,11,.15); color: var(--orange); }
+  .lc-num.budget { background: rgba(239,68,68,.15);  color: var(--red); }
+  .lc-num.guard  { background: rgba(124,58,237,.15); color: #a78bfa; }
+  .lc-num.llm    { background: rgba(16,185,129,.15); color: var(--green); }
+  .lc-num.async  { background: rgba(148,163,184,.1); color: var(--dim); }
+  .lc-text { font-size: 9.5px; }
+  .lc-text strong { color: var(--text); display: block; }
+  .lc-text span   { color: var(--dim); font-size: 9px; }
+  .lc-code {
+    font-family: monospace; font-size: 9px;
+    padding: 2px 6px; border-radius: 4px; white-space: nowrap;
+  }
+  .lc-code.c401 { background: rgba(239,68,68,.15);  color: #f87171; }
+  .lc-code.c429 { background: rgba(245,158,11,.15); color: #fbbf24; }
+  .lc-code.c402 { background: rgba(239,68,68,.15);  color: #f87171; }
+  .lc-code.c400 { background: rgba(245,158,11,.15); color: #fbbf24; }
+  .lc-code.c200 { background: rgba(16,185,129,.15); color: #34d399; }
+  .lc-code.cfire{ background: rgba(148,163,184,.1); color: var(--dim); }
+
+  /* guardrails */
+  .guard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .guard-item {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 7px 9px;
+  }
+  .guard-label {
+    font-size: 9px; font-weight: 700; letter-spacing: .5px;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .guard-label.cyan   { color: var(--cyan); }
+  .guard-label.purple { color: #a78bfa; }
+  .guard-label.orange { color: var(--orange); }
+  .guard-label.green  { color: var(--green); }
+  .guard-list { list-style: none; }
+  .guard-list li {
+    font-size: 9.5px; color: var(--dim);
+    padding: 1.5px 0;
+    display: flex; align-items: baseline; gap: 4px;
+  }
+  .guard-list li::before { content: '›'; color: var(--cyan); font-weight: 700; }
+
+  /* trace */
+  .trace-box {
+    background: #050c18; border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 11px;
+    font-family: 'Courier New', monospace;
+    font-size: 9px; color: #67e8f9;
+    line-height: 1.7;
+  }
+  .trace-box .dim  { color: var(--muted); }
+  .trace-box .val  { color: #a7f3d0; }
+  .trace-box .key  { color: #93c5fd; }
+  .trace-box .head { color: #f9a8d4; font-weight: 700; }
+
+  /* ── COL 3: RIGHT ── */
+  .col3 { display: flex; flex-direction: column; gap: 8px; }
+
+  /* cost donut chart (pure CSS) */
+  .cost-visual {
+    display: flex; align-items: center; gap: 14px; margin: 8px 0;
+  }
+  .donut {
+    position: relative; width: 90px; height: 90px; flex-shrink: 0;
+  }
+  .donut svg { width: 90px; height: 90px; transform: rotate(-90deg); }
+  .donut-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .donut-total { font-size: 15px; font-weight: 800; color: var(--text); }
+  .donut-label { font-size: 8px; color: var(--dim); }
+  .donut-legend { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px; font-size: 9.5px;
+  }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .legend-label { color: var(--dim); flex: 1; }
+  .legend-val { color: var(--text); font-weight: 600; font-family: monospace; }
+  .legend-pct { color: var(--muted); font-size: 8.5px; }
+
+  /* cost table */
+  .cost-table { width: 100%; border-collapse: collapse; }
+  .cost-table th {
+    font-size: 9px; font-weight: 700; letter-spacing: .5px;
+    text-transform: uppercase; color: var(--muted);
+    padding: 3px 5px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .cost-table td {
+    font-size: 9.5px; padding: 3px 5px;
+    border-bottom: 1px solid rgba(30,48,88,.4);
+  }
+  .cost-table td:last-child { text-align: right; font-family: monospace; color: #7dd3fc; }
+  .cost-table tr:last-child td {
+    font-weight: 700; color: var(--cyan);
+    border-bottom: none; border-top: 1px solid var(--border);
+  }
+
+  /* token breakdown */
+  .token-bar-wrap { margin: 4px 0; }
+  .token-bar-label { display: flex; justify-content: space-between; font-size: 9px; margin-bottom: 2px; }
+  .token-bar-label span:first-child { color: var(--dim); }
+  .token-bar-label span:last-child  { color: var(--text); font-family: monospace; font-weight: 600; }
+  .token-bar { height: 5px; border-radius: 3px; background: var(--card2); overflow: hidden; }
+  .token-bar-fill { height: 100%; border-radius: 3px; }
+
+  /* llmops pills */
+  .llmops-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .llmops-item {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 7px 9px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .llmops-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+  .llmops-val {
+    font-size: 16px; font-weight: 800;
+    font-family: monospace; line-height: 1;
+  }
+  .llmops-sub { font-size: 8.5px; color: var(--dim); }
+
+  /* ── FOOTER KPIs ── */
+  footer {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .kpi::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    border-radius: 8px 8px 0 0;
+  }
+  .kpi.cyan::before   { background: linear-gradient(90deg,var(--cyan),transparent); }
+  .kpi.purple::before { background: linear-gradient(90deg,#7c3aed,transparent); }
+  .kpi.green::before  { background: linear-gradient(90deg,var(--green),transparent); }
+  .kpi.orange::before { background: linear-gradient(90deg,var(--orange),transparent); }
+  .kpi-val { font-size: 20px; font-weight: 800; font-family: monospace; }
+  .kpi-label { font-size: 9px; color: var(--dim); margin-top: 2px; }
+  .kpi.cyan .kpi-val   { color: var(--cyan); }
+  .kpi.purple .kpi-val { color: #a78bfa; }
+  .kpi.green .kpi-val  { color: var(--green); }
+  .kpi.orange .kpi-val { color: var(--orange); }
+
+  /* utils */
+  .gap8 { margin-bottom: 8px; }
+  .tag {
+    display: inline-block; font-size: 8.5px; font-weight: 600;
+    padding: 1.5px 6px; border-radius: 20px;
+    background: rgba(0,212,255,.1); color: var(--cyan);
+    border: 1px solid rgba(0,212,255,.2);
+  }
+  .tag.red { background: rgba(239,68,68,.1); color: #f87171; border-color: rgba(239,68,68,.25); }
+  .tag.green { background: rgba(16,185,129,.1); color: #34d399; border-color: rgba(16,185,129,.25); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
+
+  /* scale table */
+  .scale-table { width: 100%; border-collapse: collapse; }
+  .scale-table th {
+    font-size: 8.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .4px; color: var(--muted); padding: 2px 5px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .scale-table td {
+    font-size: 9px; padding: 3px 5px; color: var(--dim);
+    border-bottom: 1px solid rgba(30,48,88,.3);
+  }
+  .scale-table td:first-child { color: var(--text); font-weight: 600; }
+  .scale-table td:last-child  { font-family: monospace; color: #7dd3fc; text-align: right; }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- ═══ HEADER ═══ -->
+  <header>
+    <div class="header-left">
+      <h1>⚕ VinmecCare AI Agent</h1>
+      <div class="tagline">Frictionless Healthcare Journey · Một điểm chạm, mọi tác vụ · Lab 12 · 2026</div>
+    </div>
+    <div class="header-right">
+      <div class="badges">
+        <span class="badge">gpt-4o-mini</span>
+        <span class="badge purple">Next.js 14</span>
+        <span class="badge">TypeScript</span>
+        <span class="badge purple">Prisma 7</span>
+        <span class="badge">PostgreSQL 16</span>
+        <span class="badge green">Docker Compose</span>
+        <span class="badge orange">OpenTelemetry</span>
+        <span class="badge">Jaeger</span>
+        <span class="badge purple">Cloudflare Tunnel</span>
+      </div>
+      <div class="live">
+        <div class="live-dot"></div>
+        <strong>lab12.hvan.it.com</strong> &nbsp;·&nbsp; 13 Tools &nbsp;·&nbsp; 9 DB Models &nbsp;·&nbsp; Sliding Window Rate Limit &nbsp;·&nbsp; Data Flywheel
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+
+    <!-- ── COL 1: Tools + Conversation Flow ── -->
+    <div class="col1">
+
+      <div class="card">
+        <div class="card-title"><span>🛠</span> 13 Agent Tools</div>
+
+        <div class="tool-group">
+          <div class="tool-group-label">🔍 Tư vấn &amp; Phân luồng</div>
+          <div class="tool-grid">
+            <div class="tool-item">
+              <div class="tool-icon">👤</div>
+              <div>
+                <div class="tool-name">get_current_user</div>
+                <div class="tool-desc">Hồ sơ bệnh nhân, personalization</div>
+              </div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon">🏥</div>
+              <div>
+                <div class="tool-name">recommend_dept</div>
+                <div class="tool-desc">Rule-based, không LLM suy diễn</div>
+              </div>
+            </div>
+            <div class="tool-item" style="grid-column:span 2">
+              <div class="tool-icon">💬</div>
+              <div>
+                <div class="tool-name">search_hospital_faq</div>
+                <div class="tool-desc">Giờ làm, bảo hiểm, chính sách · topK=3 cap</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="tool-group">
+          <div class="tool-group-label">📅 Đặt &amp; Quản lý Lịch hẹn</div>
+          <div class="tool-grid">
+            <div class="tool-item">
+              <div class="tool-icon">🕐</div>
+              <div>
+                <div class="tool-name">check_availability</div>
+                <div class="tool-desc">07:00–20:00 GMT+7, bỏ CN</div>
+              </div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon">✅</div>
+              <div>
+                <div class="tool-name">book_appointment</div>
+                <div class="tool-desc">Mã 6 ký tự, conflict check</div>
+              </div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon">🔄</div>
+              <div>
+                <div class="tool-name">reschedule</div>
+                <div class="tool-desc">Bắt buộc check_avail trước</div>
+              </div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon">❌</div>
+              <div>
+                <div class="tool-name">cancel_appointment</div>
+                <div class="tool-desc">Từ chối nếu đã cancelled</div>
+              </div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon">📋</div>
+              <div>
+                <div class="tool-name">get_user_appointments</div>
+                <div class="tool-desc">Lịch sử + sắp tới</div>
+              </div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon">🔁</div>
+              <div>
+                <div class="tool-name">schedule_followup</div>
+                <div class="tool-desc">Tái khám định kỳ</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="tool-group">
+          <div class="tool-group-label">📍 Thông tin &amp; Hỗ trợ</div>
+          <div class="tool-grid">
+            <div class="tool-item">
+              <div class="tool-icon">👨‍⚕️</div>
+              <div>
+                <div class="tool-name">list_doctors</div>
+                <div class="tool-desc">Tên, học hàm, kinh nghiệm</div>
+              </div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon">📋</div>
+              <div>
+                <div class="tool-name">get_preparation_guide</div>
+                <div class="tool-desc">Hướng dẫn trước xét nghiệm</div>
+              </div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon">📍</div>
+              <div>
+                <div class="tool-name">find_nearest_branch</div>
+                <div class="tool-desc">Haversine distance, top-3</div>
+              </div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon">💾</div>
+              <div>
+                <div class="tool-name">save_feedback_note</div>
+                <div class="tool-desc">Flywheel · Admin review</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>💬</span> Luồng hội thoại điển hình</div>
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-num">1</div>
+            <div class="flow-text"><strong>"Tôi bị đau ngực, hồi hộp"</strong> <span>→ get_current_user</span></div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-text"><strong>recommend_department</strong> <span>→ Tim mạch (score cao nhất)</span></div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-text"><strong>list_doctors</strong> <span>→ BS. Nguyễn Văn A (15yr)</span></div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">4</div>
+            <div class="flow-text"><strong>check_availability</strong> <span>→ slots 7 ngày tới</span></div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">5</div>
+            <div class="flow-text"><strong>book_appointment</strong> <span>→ Mã: <code style="color:var(--cyan)">TM4R2K</code></span></div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">6</div>
+            <div class="flow-text"><strong>get_preparation_guide</strong> <span>→ nhịn ăn, CCCD, đến sớm 15'</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── COL 2: Lifecycle + Guardrails ── -->
+    <div class="col2">
+
+      <div class="card">
+        <div class="card-title"><span>⚙️</span> Request Lifecycle — POST /api/chat</div>
+        <div class="lifecycle">
+          <div class="lc-row">
+            <div class="lc-num auth">1</div>
+            <div class="lc-text"><strong>verifyApiKey()</strong><span>Header X-API-Key · UI same-origin bypass · REQUIRE_AUTH env</span></div>
+            <div class="lc-code c401">401</div>
+          </div>
+          <div class="lc-row">
+            <div class="lc-num rate">2</div>
+            <div class="lc-text"><strong>checkRateLimit(keyId)</strong><span>Sliding window 60s · 10 req/min · Retry-After header</span></div>
+            <div class="lc-code c429">429</div>
+          </div>
+          <div class="lc-row">
+            <div class="lc-num budget">3</div>
+            <div class="lc-text"><strong>checkBudget()</strong><span>Pre-flight estimate 500 tok · Monthly bucket YYYY-MM · $0.50 hard cap</span></div>
+            <div class="lc-code c402">402</div>
+          </div>
+          <div class="lc-row">
+            <div class="lc-num guard">4</div>
+            <div class="lc-text"><strong>normalizeMessages()</strong><span>MAX_MESSAGES=20 · MAX_MSG_CHARS=2000 · UIMessage v5 + legacy</span></div>
+            <div class="lc-code c400">400</div>
+          </div>
+          <div class="lc-row">
+            <div class="lc-num guard">5</div>
+            <div class="lc-text"><strong>loadGoldenSection()</strong><span>Cache 60s · top-5 positive + top-3 negative golden examples</span></div>
+            <div class="lc-code" style="background:rgba(124,58,237,.1);color:#a78bfa">inject</div>
+          </div>
+          <div class="lc-row">
+            <div class="lc-num llm">6</div>
+            <div class="lc-text"><strong>streamText() — gpt-4o-mini</strong><span>maxSteps=12 · temp=0.3 · withCap wrapper 3000 char truncate</span></div>
+            <div class="lc-code c200">SSE</div>
+          </div>
+          <div class="lc-row">
+            <div class="lc-num async">7</div>
+            <div class="lc-text"><strong>async fire-and-forget</strong><span>recordUsage() cost tracking · scoreAsync() judge · promotion-worker debounce 5m</span></div>
+            <div class="lc-code cfire">async</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>🛡</span> Guardrails — 4 lớp bảo vệ</div>
+        <div class="guard-grid">
+          <div class="guard-item">
+            <div class="guard-label cyan">API Layer</div>
+            <ul class="guard-list">
+              <li>MAX 20 messages/request</li>
+              <li>MAX 2000 ký tự/message</li>
+              <li>Zod schema feedback</li>
+              <li>UIMessage normalization</li>
+            </ul>
+          </div>
+          <div class="guard-item">
+            <div class="guard-label orange">Tool Level</div>
+            <ul class="guard-list">
+              <li>Working hours 07–20h VN</li>
+              <li>Conflict check DB trước book</li>
+              <li>Chỉ reschedule booked/rescheduled</li>
+              <li>withCap: truncate &gt;3000 chars</li>
+            </ul>
+          </div>
+          <div class="guard-item">
+            <div class="guard-label purple">System Prompt</div>
+            <ul class="guard-list">
+              <li>Anti-injection instruction</li>
+              <li>Anti-hallucination hard rule</li>
+              <li><strong style="color:#f87171">NOT a doctor</strong> — triage only</li>
+              <li>VN time parsing 3-step algo</li>
+            </ul>
+          </div>
+          <div class="guard-item">
+            <div class="guard-label green">Double Enforce</div>
+            <ul class="guard-list">
+              <li>Working hours: prompt + tool</li>
+              <li>check_avail TRƯỚC book</li>
+              <li>maxSteps=12 loop guard</li>
+              <li>Department: rule-based only</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>📡</span> Real Trace — Jaeger OpenTelemetry</div>
+        <div class="trace-box">
+<span class="dim">TraceID: </span><span class="val">8a26e188e589d4ae2e7fd483331349f1</span>
+
+<span class="head">llm.agent</span>
+  <span class="key">input_tokens</span>: <span class="val">3,969</span>  <span class="key">output_tokens</span>: <span class="val">66</span>  <span class="key">total</span>: <span class="val">4,035</span>
+  <span class="key">cost_usd</span>: <span class="val">$0.00063495</span>  <span class="key">model</span>: <span class="val">gpt-4o-mini</span>  <span class="key">tools_called</span>: <span class="val">0</span>
+
+<span class="head">judge.score_async</span>
+  <span class="key">input_tokens</span>: <span class="val">827</span>  <span class="key">output_tokens</span>: <span class="val">61</span>  <span class="key">cost_usd</span>: <span class="val">$0.00016065</span>
+  <span class="key">latency_ms</span>: <span class="val">2229</span>  <span class="key">overall_score</span>: <span class="val">5/5</span>
+
+<span class="head">budget.check</span>
+  <span class="key">current_spent</span>: <span class="val">$0.00250</span>  <span class="key">remaining</span>: <span class="val">$0.497</span>
+  <span class="key">prompt.app_cache_hit</span>: <span class="val">true</span>  <span class="key">cached_tokens</span>: <span class="val">3,840</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>🔄</span> Data Flywheel — Quality Loop</div>
+        <div style="display:flex;gap:6px;align-items:stretch">
+          <div style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
+            <div style="font-size:9px;font-weight:700;color:var(--green);margin-bottom:4px;">PROMOTE 👍</div>
+            <div style="font-size:9px;color:var(--dim);line-height:1.6">
+              rating="up" <strong style="color:var(--text)">AND</strong> score ≥ 4.0<br>
+              → GoldenExample (positive)<br>
+              → inject top-5 vào system prompt<br>
+              Debounce worker: 5 phút
+            </div>
+          </div>
+          <div style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
+            <div style="font-size:9px;font-weight:700;color:var(--red);margin-bottom:4px;">DEMOTE 👎</div>
+            <div style="font-size:9px;color:var(--dim);line-height:1.6">
+              rating="down" <strong style="color:var(--text)">AND</strong> reason != null<br>
+              → GoldenExample (anti-pattern)<br>
+              → inject top-3 negative<br>
+              Export JSONL → fine-tune
+            </div>
+          </div>
+          <div style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
+            <div style="font-size:9px;font-weight:700;color:var(--cyan);margin-bottom:4px;">JUDGE 5 criteria</div>
+            <div style="font-size:9px;color:var(--dim);line-height:1.6">
+              correctDepartment<br>
+              toolUsageComplete<br>
+              toneAppropriate<br>
+              concise · followedWorkflow<br>
+              <span style="color:var(--text)">Async, fire-and-forget</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── COL 3: Cost + LLMOps ── -->
+    <div class="col3">
+
+      <div class="card">
+        <div class="card-title"><span>💰</span> Cost Anatomy — MVP Scale</div>
+        <div class="cost-visual">
+          <div class="donut">
+            <svg viewBox="0 0 90 90">
+              <!-- Maintenance 51% -->
+              <circle cx="45" cy="45" r="35" fill="none" stroke="#7c3aed" stroke-width="12"
+                stroke-dasharray="110.7 110.4" stroke-dashoffset="0"/>
+              <!-- Compute 29% -->
+              <circle cx="45" cy="45" r="35" fill="none" stroke="#00d4ff" stroke-width="12"
+                stroke-dasharray="63.1 158" stroke-dashoffset="-110.7"/>
+              <!-- Human 19% -->
+              <circle cx="45" cy="45" r="35" fill="none" stroke="#f59e0b" stroke-width="12"
+                stroke-dasharray="41.3 179.8" stroke-dashoffset="-173.8"/>
+              <!-- Token 0.5% -->
+              <circle cx="45" cy="45" r="35" fill="none" stroke="#10b981" stroke-width="12"
+                stroke-dasharray="3.5 217.6" stroke-dashoffset="-215.1"/>
+            </svg>
+            <div class="donut-center">
+              <div class="donut-total">$157</div>
+              <div class="donut-label">/month</div>
+            </div>
+          </div>
+          <div class="donut-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#7c3aed"></div>
+              <span class="legend-label">Maintenance</span>
+              <span class="legend-val">$80</span>
+              <span class="legend-pct">51%</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#00d4ff"></div>
+              <span class="legend-label">Compute</span>
+              <span class="legend-val">$45</span>
+              <span class="legend-pct">29%</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#f59e0b"></div>
+              <span class="legend-label">Human Review</span>
+              <span class="legend-val">$30</span>
+              <span class="legend-pct">19%</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#10b981"></div>
+              <span class="legend-label">Token LLM</span>
+              <span class="legend-val">$0.79</span>
+              <span class="legend-pct">&lt;1%</span>
+            </div>
+          </div>
+        </div>
+
+        <table class="cost-table">
+          <thead><tr><th>Thành phần</th><th>Monthly</th></tr></thead>
+          <tbody>
+            <tr><td>LLM Agent (3,969+66 tok)</td><td>$0.63</td></tr>
+            <tr><td>Judge (827+61 tok)</td><td>$0.16</td></tr>
+            <tr><td>Compute VPS 2CPU/4GB</td><td>$30</td></tr>
+            <tr><td>PostgreSQL</td><td>$15</td></tr>
+            <tr><td>Human Review 2h×$15</td><td>$30</td></tr>
+            <tr><td>Maintenance 4h×$20</td><td>$80</td></tr>
+            <tr><td><strong>TOTAL</strong></td><td><strong>$156.70</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>📊</span> Token &amp; Prompt Caching Analysis</div>
+
+        <div class="token-bar-wrap">
+          <div class="token-bar-label"><span>System prompt (base+golden)</span><span>3,500 tok</span></div>
+          <div class="token-bar"><div class="token-bar-fill" style="width:88%;background:linear-gradient(90deg,#7c3aed,#5b21b6)"></div></div>
+        </div>
+        <div class="token-bar-wrap">
+          <div class="token-bar-label"><span>User query + history</span><span>469 tok</span></div>
+          <div class="token-bar"><div class="token-bar-fill" style="width:12%;background:var(--cyan)"></div></div>
+        </div>
+        <div class="token-bar-wrap">
+          <div class="token-bar-label"><span>Agent output</span><span>66 tok</span></div>
+          <div class="token-bar"><div class="token-bar-fill" style="width:7%;background:var(--green)"></div></div>
+        </div>
+
+        <hr class="divider">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:7px 9px;">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:3px;">Không cache</div>
+            <div style="font-size:13px;font-weight:700;color:#f87171;font-family:monospace">$0.388/mo</div>
+            <div style="font-size:8.5px;color:var(--dim)">$0.15/1M input tokens</div>
+          </div>
+          <div style="background:var(--card2);border:1px solid rgba(16,185,129,.25);border-radius:6px;padding:7px 9px;">
+            <div style="font-size:9px;color:var(--green);margin-bottom:3px;">Với prefix cache ✓</div>
+            <div style="font-size:13px;font-weight:700;color:var(--green);font-family:monospace">$0.227/mo</div>
+            <div style="font-size:8.5px;color:var(--dim)">$0.075/1M cached · 41% saved</div>
+          </div>
+        </div>
+
+        <div style="margin-top:5px;font-size:9px;color:var(--dim);background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.1);border-radius:5px;padding:5px 8px;line-height:1.6">
+          App cache TTL=60s → byte-for-byte identical prefix → OpenAI prefix cache hit ≈ <strong style="color:var(--cyan)">80–90%</strong> trong peak hours.
+          Static 3,500 tokens discount 50%: <strong style="color:var(--cyan)">$0.161/mo saved (41%)</strong>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>📈</span> Scale Scenarios</div>
+        <table class="scale-table">
+          <thead><tr><th>Scale</th><th>Users/day</th><th>Req/mo</th><th>LLM/mo</th><th>Total/mo</th></tr></thead>
+          <tbody>
+            <tr><td>Demo MVP</td><td>~7</td><td>540</td><td>$0.80</td><td>$157</td></tr>
+            <tr><td>5× scale</td><td>~35</td><td>2,700</td><td>$4.00</td><td>$295</td></tr>
+            <tr><td>10× scale</td><td>~70</td><td>5,400</td><td>$8.00</td><td>$315</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:6px;font-size:9px;color:var(--dim);line-height:1.6">
+          ⚠️ <strong style="color:var(--orange)">Cost driver thay đổi theo scale:</strong><br>
+          Small: <span style="color:#a78bfa">Maintenance ($80, 51%)</span> dominate<br>
+          Large (10K users): <span style="color:var(--cyan)">Token LLM (~58%)</span> dominate
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>⚡</span> LLMOps Config</div>
+        <div class="llmops-grid">
+          <div class="llmops-item">
+            <div class="llmops-label" style="color:var(--orange)">Rate Limit</div>
+            <div class="llmops-val" style="color:var(--orange)">10</div>
+            <div class="llmops-sub">req/min · sliding window 60s</div>
+          </div>
+          <div class="llmops-item">
+            <div class="llmops-label" style="color:var(--red)">Budget Cap</div>
+            <div class="llmops-val" style="color:var(--red)">$0.50</div>
+            <div class="llmops-sub">monthly · reset YYYY-MM</div>
+          </div>
+          <div class="llmops-item">
+            <div class="llmops-label" style="color:var(--green)">Judge Score</div>
+            <div class="llmops-val" style="color:var(--green)">5/5</div>
+            <div class="llmops-sub">overall · async 2,229ms</div>
+          </div>
+          <div class="llmops-item">
+            <div class="llmops-label" style="color:var(--cyan)">Max Steps</div>
+            <div class="llmops-val" style="color:var(--cyan)">12</div>
+            <div class="llmops-sub">agentic loop guard · temp=0.3</div>
+          </div>
+          <div class="llmops-item">
+            <div class="llmops-label" style="color:#a78bfa">Golden+</div>
+            <div class="llmops-val" style="color:#a78bfa">≥4.0</div>
+            <div class="llmops-sub">score threshold promote</div>
+          </div>
+          <div class="llmops-item">
+            <div class="llmops-label" style="color:var(--green)">Working Hrs</div>
+            <div class="llmops-val" style="color:var(--green); font-size:12px">07–20</div>
+            <div class="llmops-sub">GMT+7 · Mon–Sat only</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER KPIs ═══ -->
+  <footer>
+    <div class="kpi cyan">
+      <div class="kpi-val">13</div>
+      <div class="kpi-label">Agent Tools</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-val">41%</div>
+      <div class="kpi-label">Token Cost Saved (Prompt Cache)</div>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-val">$0.0008</div>
+      <div class="kpi-label">Real Cost / Request (Jaeger)</div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-val">5/5</div>
+      <div class="kpi-label">Judge Quality Score</div>
+    </div>
+    <div class="kpi cyan">
+      <div class="kpi-val">-13%</div>
+      <div class="kpi-label">Estimate vs Real (over-estimated)</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-val">9</div>
+      <div class="kpi-label">DB Models · Prisma Schema</div>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
