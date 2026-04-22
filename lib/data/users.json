@@ -5,7 +5,9 @@
     "age": 32,
     "gender": "male",
     "avatarUrl": null,
-    "medicalNotes": "Khỏe mạnh, chưa có lịch sử khám tại Vinmec"
+    "medicalNotes": "Khỏe mạnh, chưa có lịch sử khám tại Vinmec",
+    "username": "an",
+    "password": "an123"
   },
   {
     "id": "user-binh",
@@ -13,7 +15,9 @@
     "age": 58,
     "gender": "female",
     "avatarUrl": null,
-    "medicalNotes": "Tiểu đường type 2 (chẩn đoán 2020), tiền sử tăng huyết áp, khám định kỳ tim mạch mỗi 6 tháng"
+    "medicalNotes": "Tiểu đường type 2 (chẩn đoán 2020), tiền sử tăng huyết áp, khám định kỳ tim mạch mỗi 6 tháng",
+    "username": "binh",
+    "password": "binh123"
   },
   {
     "id": "user-cuong",
@@ -21,6 +25,58 @@
     "age": 8,
     "gender": "male",
     "avatarUrl": null,
-    "medicalNotes": "Bệnh nhi, có mẹ là người đại diện. Tiền sử viêm phế quản tái phát, đã điều trị tại Khoa Nhi Vinmec"
+    "medicalNotes": "Bệnh nhi, có mẹ là người đại diện. Tiền sử viêm phế quản tái phát, đã điều trị tại Khoa Nhi Vinmec",
+    "username": "cuong",
+    "password": "cuong123"
+  },
+  {
+    "id": "user-dung",
+    "name": "Phạm Thị Dung",
+    "age": 45,
+    "gender": "female",
+    "avatarUrl": null,
+    "medicalNotes": "Viêm khớp dạng thấp (chẩn đoán 2019), đang dùng Methotrexate. Tái khám Khoa Cơ xương khớp mỗi 3 tháng. Dị ứng Aspirin.",
+    "username": "dung",
+    "password": "dung123"
+  },
+  {
+    "id": "user-em",
+    "name": "Hoàng Văn Em",
+    "age": 67,
+    "gender": "male",
+    "avatarUrl": null,
+    "medicalNotes": "Bệnh phổi tắc nghẽn mãn tính (COPD) giai đoạn II, hút thuốc lá 30 năm đã bỏ 2022. Sử dụng máy hít Symbicort hàng ngày. Chụp CT phổi 6 tháng/lần.",
+    "username": "em",
+    "password": "em123"
+  },
+  {
+    "id": "user-phuong",
+    "name": "Nguyễn Thị Phương",
+    "age": 29,
+    "gender": "female",
+    "avatarUrl": null,
+    "medicalNotes": "Migraine mãn tính (>15 cơn/tháng), đang điều trị dự phòng bằng Topiramate. Tiền sử rối loạn lo âu, đang theo dõi tại Khoa Thần kinh.",
+    "username": "phuong",
+    "password": "phuong123"
+  },
+  {
+    "id": "user-giang",
+    "name": "Trần Minh Giang",
+    "age": 53,
+    "gender": "male",
+    "avatarUrl": null,
+    "medicalNotes": "Xơ gan Child-Pugh A do viêm gan B mãn tính, đang điều trị Tenofovir. Siêu âm bụng và AFP mỗi 6 tháng để tầm soát ung thư gan.",
+    "username": "giang",
+    "password": "giang123"
+  },
+  {
+    "id": "user-huong",
+    "name": "Lê Thị Hương",
+    "age": 38,
+    "gender": "female",
+    "avatarUrl": null,
+    "medicalNotes": "Tiền sử khỏe mạnh, đến khám do đau mắt và giảm thị lực. Nghi ngờ glôcôm góc mở, cần đo nhãn áp và soi đáy mắt định kỳ.",
+    "username": "huong",
+    "password": "huong123"
   }
 ]

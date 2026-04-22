@@ -1,12 +1,12 @@
 import { PhoneFrame } from "@/components/layout/PhoneFrame";
-import { LoginClient } from "./LoginClient";
+import { RegisterClient } from "./RegisterClient";
 
 export const dynamic = "force-dynamic";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <PhoneFrame>
-      <LoginClient />
+      <RegisterClient />
     </PhoneFrame>
   );
 }

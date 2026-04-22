@@ -13,6 +13,8 @@ model User {
   gender       String
   avatarUrl    String?
   medicalNotes String?
+  username     String?       @unique
+  passwordHash String?
   appointments Appointment[]
   feedback     Feedback[]
   createdAt    DateTime      @default(now())

@@ -2,12 +2,13 @@ import "dotenv/config";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import departments from "../lib/data/departments.json";
 import doctors from "../lib/data/doctors.json";
 import branches from "../lib/data/branches.json";
 import faqs from "../lib/data/faq.json";
 import guides from "../lib/data/preparation-guides.json";
-import users from "../lib/data/users.json";
+import usersRaw from "../lib/data/users.json";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error("DATABASE_URL is not set");
@@ -38,15 +39,23 @@ async function main() {
   }
   console.log(`✅ Seeded: ${doctors.length} doctors`);
 
-  // 3. Users
-  for (const user of users) {
+  // 3. Users (with hashed passwords)
+  for (const raw of usersRaw) {
+    const { password, ...rest } = raw as typeof raw & { password?: string };
+    const passwordHash = password ? await bcrypt.hash(password, 10) : undefined;
+
+    const data = {
+      ...rest,
+      ...(passwordHash ? { passwordHash } : {}),
+    };
+
     await prisma.user.upsert({
-      where: { id: user.id },
-      update: user,
-      create: user,
+      where: { id: raw.id },
+      update: data,
+      create: data,
     });
   }
-  console.log(`✅ Seeded: ${users.length} users`);
+  console.log(`✅ Seeded: ${usersRaw.length} users`);
 
   // 4. Branches
   for (const branch of branches) {
@@ -74,7 +83,7 @@ async function main() {
   console.log(`✅ Seeded: ${guides.length} guides`);
 
   console.log(
-    `\n🎉 Seed complete: ${departments.length} departments, ${doctors.length} doctors, ${users.length} users, ${branches.length} branches, ${faqs.length} faqs, ${guides.length} guides`
+    `\n🎉 Seed complete: ${departments.length} departments, ${doctors.length} doctors, ${usersRaw.length} users, ${branches.length} branches, ${faqs.length} faqs, ${guides.length} guides`
   );
 }
 
