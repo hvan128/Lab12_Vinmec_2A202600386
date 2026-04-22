@@ -13,8 +13,6 @@
 import { tracer, calcLLMCost, SpanStatusCode } from "@/lib/tracing";
 
 const MONTHLY_BUDGET = parseFloat(process.env.MONTHLY_BUDGET_USD || "10");
-const INPUT_PRICE_PER_1K = 0.00015;
-const OUTPUT_PRICE_PER_1K = 0.0006;
 
 type MonthBucket = { month: string; spentUsd: number };
 const spend = new Map<string, MonthBucket>();
@@ -79,9 +77,7 @@ export function checkBudget(
         const month = currentMonth();
         const bucket = spend.get(key);
         const current = bucket && bucket.month === month ? bucket.spentUsd : 0;
-        const estCost =
-          (estInputTokens / 1000) * INPUT_PRICE_PER_1K +
-          (estOutputTokens / 1000) * OUTPUT_PRICE_PER_1K;
+        const estCost = calcLLMCost(estInputTokens, estOutputTokens);
 
         span.setAttributes({
           "budget.current_spent_usd": current,

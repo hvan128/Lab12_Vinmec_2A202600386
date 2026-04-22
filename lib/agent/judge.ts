@@ -91,14 +91,6 @@ export async function scoreAsync(
         const judgeCost = calcLLMCost(judgeInput, judgeOutput);
         const latency = Date.now() - start;
 
-        span.setAttributes({
-          "judge.input_tokens": judgeInput,
-          "judge.output_tokens": judgeOutput,
-          "judge.cost_usd": judgeCost,
-          "judge.latency_ms": latency,
-          "judge.overall_score": object.overall,
-        });
-
         const overallScore =
           (object.correctDepartment +
             object.toolUsageComplete +
@@ -106,6 +98,14 @@ export async function scoreAsync(
             object.concise +
             object.followedWorkflow) /
           5;
+
+        span.setAttributes({
+          "judge.input_tokens": judgeInput,
+          "judge.output_tokens": judgeOutput,
+          "judge.cost_usd": judgeCost,
+          "judge.latency_ms": latency,
+          "judge.overall_score": overallScore,
+        });
 
         await prisma.qualityScore.create({
           data: {
