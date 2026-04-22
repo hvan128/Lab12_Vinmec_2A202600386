@@ -2,6 +2,7 @@ import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
+import { tracer, calcLLMCost, SpanStatusCode } from "@/lib/tracing";
 
 const JUDGE_MODEL = process.env.JUDGE_MODEL ?? "gpt-4o-mini";
 
@@ -65,46 +66,77 @@ export async function scoreAsync(
   toolsUsed: string[],
   feedbackId?: string
 ): Promise<void> {
-  try {
-    const start = Date.now();
-
-    const { object } = await generateObject({
-      model: openai(JUDGE_MODEL),
-      schema: JudgeResultSchema,
-      system: JUDGE_SYSTEM,
-      prompt: `User hỏi: "${userQuery}"\n\nBot trả lời: "${botResponse}"\n\nCác tool đã gọi: [${toolsUsed.join(", ") || "không có"}]`,
-    });
-
-    const overallScore =
-      (object.correctDepartment +
-        object.toolUsageComplete +
-        object.toneAppropriate +
-        object.concise +
-        object.followedWorkflow) /
-      5;
-
-    await prisma.qualityScore.create({
-      data: {
-        userId,
-        userQuery,
-        botResponse,
-        toolsUsed,
-        correctDepartment: object.correctDepartment,
-        toolUsageComplete: object.toolUsageComplete,
-        toneAppropriate: object.toneAppropriate,
-        concise: object.concise,
-        followedWorkflow: object.followedWorkflow,
-        overallScore,
-        judgeRationale: object.rationale,
-        feedbackId: feedbackId ?? null,
+  tracer.startActiveSpan(
+    "judge.score_async",
+    {
+      attributes: {
+        "judge.user_id": userId,
+        "judge.model": JUDGE_MODEL,
+        "judge.tools_used_count": toolsUsed.length,
       },
-    });
+    },
+    async (span) => {
+      try {
+        const start = Date.now();
 
-    const latency = Date.now() - start;
-    console.log(
-      `[judge] scored userId=${userId} overall=${overallScore.toFixed(2)} latency=${latency}ms`
-    );
-  } catch (err) {
-    console.error("[judge] scoreAsync error:", err);
-  }
+        const { object, usage } = await generateObject({
+          model: openai(JUDGE_MODEL),
+          schema: JudgeResultSchema,
+          system: JUDGE_SYSTEM,
+          prompt: `User hỏi: "${userQuery}"\n\nBot trả lời: "${botResponse}"\n\nCác tool đã gọi: [${toolsUsed.join(", ") || "không có"}]`,
+        });
+
+        const judgeInput = usage?.inputTokens ?? 0;
+        const judgeOutput = usage?.outputTokens ?? 0;
+        const judgeCost = calcLLMCost(judgeInput, judgeOutput);
+        const latency = Date.now() - start;
+
+        const overallScore =
+          (object.correctDepartment +
+            object.toolUsageComplete +
+            object.toneAppropriate +
+            object.concise +
+            object.followedWorkflow) /
+          5;
+
+        span.setAttributes({
+          "judge.input_tokens": judgeInput,
+          "judge.output_tokens": judgeOutput,
+          "judge.cost_usd": judgeCost,
+          "judge.latency_ms": latency,
+          "judge.overall_score": overallScore,
+        });
+
+        await prisma.qualityScore.create({
+          data: {
+            userId,
+            userQuery,
+            botResponse,
+            toolsUsed,
+            correctDepartment: object.correctDepartment,
+            toolUsageComplete: object.toolUsageComplete,
+            toneAppropriate: object.toneAppropriate,
+            concise: object.concise,
+            followedWorkflow: object.followedWorkflow,
+            overallScore,
+            judgeRationale: object.rationale,
+            feedbackId: feedbackId ?? null,
+          },
+        });
+
+        console.log(
+          `[judge] scored userId=${userId} overall=${overallScore.toFixed(2)} ` +
+            `tokens=${judgeInput + judgeOutput} cost=$${judgeCost.toFixed(6)} latency=${latency}ms`
+        );
+        span.setStatus({ code: SpanStatusCode.OK });
+        span.end();
+      } catch (err) {
+        const e = err as Error;
+        span.setStatus({ code: SpanStatusCode.ERROR, message: e.message });
+        span.recordException(e);
+        span.end();
+        console.error("[judge] scoreAsync error:", err);
+      }
+    },
+  );
 }

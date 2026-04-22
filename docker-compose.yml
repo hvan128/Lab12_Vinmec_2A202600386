@@ -85,5 +85,21 @@ services:
     network_mode: host  # truy cập localhost:3003 trực tiếp
     profiles: ["tunnel"]
 
+  # ── Observability: Jaeger for distributed tracing ─────────────
+  # Start with: docker compose --profile tracing up -d
+  # UI: http://localhost:16686
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: vinmec_jaeger
+    restart: unless-stopped
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      OTLP_HTTP_HOST: "0.0.0.0:4318"
+    ports:
+      - "4318:4318"   # OTLP HTTP receiver (for app to send traces)
+      - "6831:6831/udp"  # Jaeger agent (OTLP gRPC)
+      - "16686:16686"  # Jaeger UI
+    profiles: ["tracing"]
+
 volumes:
   postgres_data:

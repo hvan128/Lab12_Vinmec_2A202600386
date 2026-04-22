@@ -7,6 +7,8 @@
  * có thể upgrade sang Redis khi cần).
  */
 
+import { tracer, SpanStatusCode } from "@/lib/tracing";
+
 const WINDOW_MS = 60_000;
 const LIMIT = parseInt(process.env.RATE_LIMIT_PER_MINUTE || "10", 10);
 
@@ -17,30 +19,56 @@ export type RateLimitResult =
   | { ok: false; status: 429; error: string; retryAfter: number };
 
 export function checkRateLimit(key: string): RateLimitResult {
-  const now = Date.now();
-  const arr = buckets.get(key) ?? [];
+  return tracer.startActiveSpan(
+    "ratelimit.check",
+    {
+      attributes: {
+        "ratelimit.key": key,
+        "ratelimit.limit": LIMIT,
+        "ratelimit.window_ms": WINDOW_MS,
+      },
+    },
+    (span) => {
+      try {
+        const now = Date.now();
+        const arr = buckets.get(key) ?? [];
 
-  // drop timestamps older than window
-  while (arr.length && arr[0] < now - WINDOW_MS) arr.shift();
+        // drop timestamps older than window
+        while (arr.length && arr[0] < now - WINDOW_MS) arr.shift();
 
-  if (arr.length >= LIMIT) {
-    const retryAfter = Math.ceil((arr[0] + WINDOW_MS - now) / 1000);
-    buckets.set(key, arr);
-    return {
-      ok: false,
-      status: 429,
-      error: `Rate limit exceeded: ${LIMIT} req/min`,
-      retryAfter,
-    };
-  }
+        const remaining = LIMIT - arr.length;
+        span.setAttribute("ratelimit.remaining", remaining);
 
-  arr.push(now);
-  buckets.set(key, arr);
-  return {
-    ok: true,
-    remaining: LIMIT - arr.length,
-    resetIn: Math.ceil(WINDOW_MS / 1000),
-  };
+        if (arr.length >= LIMIT) {
+          const retryAfter = Math.ceil((arr[0] + WINDOW_MS - now) / 1000);
+          span.setStatus({ code: SpanStatusCode.ERROR, message: "Rate limit exceeded" });
+          span.end();
+          return {
+            ok: false as const,
+            status: 429 as const,
+            error: `Rate limit exceeded: ${LIMIT} req/min`,
+            retryAfter,
+          };
+        }
+
+        arr.push(now);
+        buckets.set(key, arr);
+        span.setStatus({ code: SpanStatusCode.OK });
+        span.end();
+        return {
+          ok: true as const,
+          remaining,
+          resetIn: Math.ceil(WINDOW_MS / 1000),
+        };
+      } catch (err) {
+        const e = err as Error;
+        span.setStatus({ code: SpanStatusCode.ERROR, message: e.message });
+        span.recordException(e);
+        span.end();
+        throw err;
+      }
+    },
+  );
 }
 
 export function rateLimitErrorResponse(

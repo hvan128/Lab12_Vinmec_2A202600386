@@ -2,7 +2,6 @@ import { openai } from "@ai-sdk/openai";
 import { streamText, convertToModelMessages, stepCountIs } from "ai";
 import type { UIMessage } from "ai";
 import { tools } from "@/lib/agent/tools";
-import { getSystemPrompt } from "@/lib/agent/system-prompt";
 import { AGENT_CONFIG } from "@/lib/agent/config";
 import { scoreAsync } from "@/lib/agent/judge";
 import { verifyApiKey, authErrorResponse } from "@/lib/auth";
@@ -11,7 +10,11 @@ import {
   checkBudget,
   recordUsage,
   budgetErrorResponse,
+  estimateRequestInputTokens,
+  estimateOutputTokens,
 } from "@/lib/costGuard";
+import { tracer, calcLLMCost, SpanStatusCode, LLM_PRICES } from "@/lib/tracing";
+import { getCachedSystemPrompt, STATIC_PREFIX_TOKENS } from "@/lib/promptCache";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -74,16 +77,14 @@ function normalizeMessages(raw: unknown[]): Omit<UIMessage, "id">[] {
 }
 
 export async function POST(req: Request) {
-  // ── Lab 12: Auth + Rate limit + Cost guard ──────────────
+  // ── Lab 12: Auth + Rate limit ────────────────────────────
   const auth = verifyApiKey(req);
   if (!auth.ok) return authErrorResponse(auth);
 
   const rl = checkRateLimit(auth.keyId);
   if (!rl.ok) return rateLimitErrorResponse(rl);
 
-  const budget = checkBudget(auth.keyId);
-  if (!budget.ok) return budgetErrorResponse(budget);
-
+  // Parse body before budget check (need messages for token estimation)
   let body: { messages?: unknown[]; userId?: string };
   try {
     body = await req.json();
@@ -121,8 +122,10 @@ export async function POST(req: Request) {
   const nowVN = new Date(Date.now() + 7 * 3600 * 1000);
   const todayVN = nowVN.toISOString().slice(0, 10); // YYYY-MM-DD
 
-  // Load base prompt + golden examples (cached 60s)
-  const basePrompt = await getSystemPrompt();
+  // Load base prompt + golden examples — app-level cache (60s TTL).
+  // Identical string across requests → OpenAI prefix cache hits the static
+  // ~3 500-token prefix at 50% discount.
+  const { prompt: basePrompt, appCacheHit } = await getCachedSystemPrompt();
   const systemWithUser = `${basePrompt}\n\nNgày hôm nay (giờ Việt Nam): ${todayVN}\nUSER_ID hiện tại: ${userId}`;
 
   const normalized = normalizeMessages(messages);
@@ -144,6 +147,51 @@ export async function POST(req: Request) {
           .join("")
       : "";
 
+  // ── Cost guard (accurate estimate from actual content) ──
+  const messagesContentLength = messages
+    .map((m) => {
+      const msg = m as Record<string, unknown>;
+      if (typeof msg.content === "string") return msg.content.length;
+      if (Array.isArray(msg.content)) {
+        return (msg.content as Array<{ type: string; text?: string }>)
+          .filter((c) => c.type === "text")
+          .map((c) => c.text ?? "")
+          .join("").length;
+      }
+      return 0;
+    })
+    .reduce((sum, len) => sum + len, 0);
+
+  const estInputTokens = estimateRequestInputTokens(
+    systemWithUser.length,
+    messagesContentLength,
+  );
+  const estOutputTokens = estimateOutputTokens(userQuery.length);
+
+  const budgetCheck = checkBudget(auth.keyId, estInputTokens, estOutputTokens);
+  if (!budgetCheck.ok) return budgetErrorResponse(budgetCheck);
+
+  // ── LLM call with tracing span ───────────────────────────
+  // When app cache is warm the system prompt string is identical to the
+  // previous request, so OpenAI's prefix cache should cover STATIC_PREFIX_TOKENS.
+  const estCachedTokens = appCacheHit ? STATIC_PREFIX_TOKENS : 0;
+  const estCacheSavingsUsd =
+    (estCachedTokens / 1_000_000) *
+    (LLM_PRICES.inputPer1M - LLM_PRICES.cachedInputPer1M);
+
+  const llmSpan = tracer.startSpan("llm.agent", {
+    attributes: {
+      "llm.model": AGENT_CONFIG.model,
+      "llm.est_input_tokens": estInputTokens,
+      "llm.est_output_tokens": estOutputTokens,
+      "llm.user_id": userId,
+      "llm.messages_count": messages.length,
+      "prompt.app_cache_hit": appCacheHit,
+      "prompt.est_cached_tokens": estCachedTokens,
+      "prompt.est_cache_savings_usd": estCacheSavingsUsd,
+    },
+  });
+
   const result = streamText({
     model: openai(AGENT_CONFIG.model),
     system: systemWithUser,
@@ -151,7 +199,8 @@ export async function POST(req: Request) {
     tools,
     stopWhen: stepCountIs(AGENT_CONFIG.maxSteps),
     temperature: AGENT_CONFIG.temperature,
-    onError: (e) => {
+    onError: (e: unknown) => {
+      llmSpan.recordException(e as Error);
       console.error("[chat] stream error:", e);
     },
   });
@@ -161,12 +210,47 @@ export async function POST(req: Request) {
     .then(([botText, calls, usage]) => {
       const toolNames = calls.map((c) => c.toolName);
       scoreAsync(userId, userQuery, botText, toolNames);
+
       if (usage && typeof usage === "object") {
-        const u = usage as { inputTokens?: number; outputTokens?: number };
-        recordUsage(auth.keyId, u.inputTokens ?? 0, u.outputTokens ?? 0);
+        const u = usage as {
+          inputTokens?: number;
+          outputTokens?: number;
+          // OpenAI returns cached_tokens inside prompt_tokens_details;
+          // the AI SDK may surface it here as cachedInputTokens.
+          cachedInputTokens?: number;
+        };
+        const inputTokens = u.inputTokens ?? 0;
+        const outputTokens = u.outputTokens ?? 0;
+        // Prefer actual cached tokens from API; fall back to app-cache estimate.
+        const cachedInputTokens =
+          u.cachedInputTokens ?? (appCacheHit ? estCachedTokens : 0);
+        const cost = calcLLMCost(inputTokens, outputTokens, cachedInputTokens);
+        const cacheSavingsUsd =
+          (cachedInputTokens / 1_000_000) *
+          (LLM_PRICES.inputPer1M - LLM_PRICES.cachedInputPer1M);
+
+        llmSpan.setAttributes({
+          "llm.input_tokens": inputTokens,
+          "llm.output_tokens": outputTokens,
+          "llm.total_tokens": inputTokens + outputTokens,
+          "llm.cached_input_tokens": cachedInputTokens,
+          "llm.cost_usd": cost,
+          "llm.cache_savings_usd": cacheSavingsUsd,
+          "llm.tools_called": calls.length,
+        });
+
+        recordUsage(auth.keyId, inputTokens, outputTokens, cachedInputTokens);
       }
+
+      llmSpan.setStatus({ code: SpanStatusCode.OK });
+      llmSpan.end();
     })
-    .catch((e) => console.error("[chat] post-stream error:", e));
+    .catch((e) => {
+      llmSpan.setStatus({ code: SpanStatusCode.ERROR, message: (e as Error).message });
+      llmSpan.recordException(e as Error);
+      llmSpan.end();
+      console.error("[chat] post-stream error:", e);
+    });
 
   return result.toUIMessageStreamResponse();
 }
