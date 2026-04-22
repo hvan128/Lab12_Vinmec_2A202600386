@@ -178,5 +178,47 @@
     "answer": "Vinmec cung cấp dịch vụ Telehealth - tư vấn sức khỏe trực tuyến qua video call với bác sĩ. Dịch vụ khả dụng từ 7:00 - 22:00 hàng ngày, đặt lịch qua app MyVinmec. Chi phí tư vấn trực tuyến thấp hơn khám trực tiếp khoảng 30-50%. Phù hợp cho tái khám, tư vấn kết quả xét nghiệm hoặc các vấn đề sức khỏe không khẩn cấp.",
     "keywords": ["tư vấn online", "telehealth", "khám từ xa", "video call", "bác sĩ online", "tái khám online"],
     "category": "general"
+  },
+  {
+    "question": "Tôi có thể xin bản sao hồ sơ bệnh án của mình không?",
+    "answer": "Có, bệnh nhân hoặc người đại diện hợp pháp có quyền yêu cầu cấp bản sao hồ sơ bệnh án. Bạn cần đến phòng Hành chính Y vụ của cơ sở Vinmec nơi điều trị, xuất trình CCCD và điền đơn yêu cầu. Phí sao hồ sơ khoảng 50.000 - 200.000 đồng tùy số lượng trang. Thời gian xử lý 1-3 ngày làm việc. Hồ sơ bệnh án được lưu trữ tối thiểu 10 năm.",
+    "keywords": ["hồ sơ bệnh án", "bệnh án", "sao lục", "lịch sử khám", "bản sao", "hành chính y vụ"],
+    "category": "general"
+  },
+  {
+    "question": "Tôi bị dị ứng thuốc, Vinmec có ghi nhận điều này không?",
+    "answer": "Có, Vinmec ghi nhận thông tin dị ứng thuốc vào hồ sơ bệnh án điện tử của bạn. Khi đến khám, hãy chủ động thông báo cho bác sĩ và điều dưỡng về tất cả các loại thuốc, thực phẩm hoặc chất bạn bị dị ứng. Thông tin này sẽ được cập nhật vào hệ thống và hiển thị cảnh báo mỗi khi bác sĩ kê đơn. Bạn cũng có thể cập nhật thông tin dị ứng qua app MyVinmec.",
+    "keywords": ["dị ứng thuốc", "dị ứng", "thông tin dị ứng", "cảnh báo thuốc", "hồ sơ bệnh án"],
+    "category": "general"
+  },
+  {
+    "question": "Tôi cần tái khám sau điều trị, có cần đặt lịch không?",
+    "answer": "Có, tái khám cần đặt lịch trước để đảm bảo gặp đúng bác sĩ đã điều trị. Khi ra viện hoặc kết thúc đợt khám, bác sĩ thường chỉ định ngày tái khám cụ thể. Bạn có thể đặt lịch tái khám ngay lúc đó qua app MyVinmec hoặc nhờ nhân viên đặt giúp. Tái khám theo đúng lịch hẹn giúp bác sĩ theo dõi tiến triển điều trị tốt nhất.",
+    "keywords": ["tái khám", "khám lại", "theo dõi điều trị", "lịch tái khám", "hẹn tái khám"],
+    "category": "booking"
+  },
+  {
+    "question": "Vinmec có dịch vụ lấy mẫu xét nghiệm tại nhà không?",
+    "answer": "Vinmec cung cấp dịch vụ lấy mẫu xét nghiệm tại nhà (máu, nước tiểu, phết cổ họng...) trong bán kính 15km từ cơ sở. Đặt lịch qua app MyVinmec hoặc gọi tổng đài 1800 599 920. Điều dưỡng sẽ đến đúng giờ hẹn, lấy mẫu tại nhà và mang về phòng xét nghiệm Vinmec. Kết quả trả về app trong 2-6 tiếng. Phí dịch vụ lấy mẫu tại nhà từ 150.000 đồng, chưa bao gồm phí xét nghiệm.",
+    "keywords": ["lấy máu tại nhà", "xét nghiệm tại nhà", "điều dưỡng tại nhà", "lấy mẫu", "dịch vụ tại nhà"],
+    "category": "booking"
+  },
+  {
+    "question": "Tôi cần đổi bác sĩ giữa chừng, có được không?",
+    "answer": "Bệnh nhân có quyền yêu cầu đổi bác sĩ điều trị. Bạn có thể trình bày nguyện vọng với trưởng khoa hoặc phòng quản lý chất lượng của bệnh viện. Vinmec tôn trọng quyền lợi bệnh nhân và sẽ bố trí bác sĩ khác phù hợp khi có thể. Với bệnh nhân nội trú, việc chuyển giao hồ sơ giữa các bác sĩ sẽ được thực hiện đầy đủ để đảm bảo liên tục điều trị.",
+    "keywords": ["đổi bác sĩ", "thay bác sĩ", "quyền bệnh nhân", "yêu cầu bác sĩ khác"],
+    "category": "general"
+  },
+  {
+    "question": "Vinmec có chính sách ưu đãi cho người cao tuổi không?",
+    "answer": "Vinmec có chính sách ưu tiên phục vụ người cao tuổi (từ 60 tuổi trở lên): được ưu tiên xếp hàng tại quầy đăng ký, hỗ trợ di chuyển bằng xe lăn hoặc ghế đẩy miễn phí, bố trí nhân viên hỗ trợ khi cần. Về ưu đãi tài chính, người cao tuổi có thẻ Bảo hiểm xã hội từ 80 tuổi trở lên được hưởng 95% BHYT. Một số gói khám tổng quát có mức giá ưu đãi cho người cao tuổi.",
+    "keywords": ["người cao tuổi", "ưu đãi cao tuổi", "người già", "ưu tiên", "xe lăn", "hỗ trợ"],
+    "category": "general"
+  },
+  {
+    "question": "Vinmec có thực hiện tiêm chủng không?",
+    "answer": "Có, Vinmec cung cấp đầy đủ dịch vụ tiêm chủng cho cả trẻ em và người lớn. Các vắc-xin phổ biến gồm: cúm, viêm gan A/B, phế cầu, não mô cầu, HPV, thuỷ đậu, MMR, sởi - quai bị - rubella, và nhiều loại khác. Bạn có thể đặt lịch tiêm qua app MyVinmec. Sau tiêm, bệnh nhân được theo dõi 30 phút tại cơ sở. Vinmec bảo quản vắc-xin theo chuẩn dây chuyền lạnh quốc tế.",
+    "keywords": ["tiêm chủng", "vắc-xin", "vaccine", "tiêm phòng", "cúm", "HPV", "viêm gan"],
+    "category": "general"
   }
 ]

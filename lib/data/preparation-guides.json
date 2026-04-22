@@ -156,5 +156,69 @@
     ],
     "duration": "Nhịn ăn từ nửa đêm, chỉ uống nước đến 2 tiếng trước mổ",
     "notes": "Người đái tháo đường: hỏi bác sĩ về việc điều chỉnh insulin và thuốc hạ đường huyết trước phẫu thuật. Không tự ý dừng hoặc tiếp tục uống thuốc mà không có chỉ dẫn của bác sĩ phẫu thuật."
+  },
+  {
+    "id": "ophthalmology",
+    "examType": "ophthalmology",
+    "title": "Hướng dẫn chuẩn bị khám mắt",
+    "instructions": [
+      "Không đeo kính áp tòng (contact lens) ít nhất 24 tiếng trước nếu khám khúc xạ hoặc đo nhãn áp.",
+      "Mang theo kính gọng hiện đang đeo để bác sĩ đối chiếu độ kính.",
+      "Thông báo tất cả thuốc nhỏ mắt đang sử dụng.",
+      "Nếu khám soi đáy mắt giãn đồng tử: cần có người đưa về vì mắt sẽ mờ 4-6 tiếng sau nhỏ thuốc giãn.",
+      "Không lái xe sau khi được nhỏ thuốc giãn đồng tử.",
+      "Mang theo kính mát để bảo vệ mắt sau khi nhỏ thuốc giãn (mắt nhạy cảm với ánh sáng).",
+      "Đo nhãn áp không cần chuẩn bị đặc biệt, không đau."
+    ],
+    "duration": "Không cần nhịn ăn. Nếu giãn đồng tử: bố trí người đưa về, không lái xe",
+    "notes": "Bệnh nhân nghi glôcôm hoặc có tiền sử gia đình bị glôcôm nên thông báo để bác sĩ ưu tiên đo nhãn áp và soi gai thị ngay trong buổi khám đầu tiên."
+  },
+  {
+    "id": "dermatology",
+    "examType": "dermatology",
+    "title": "Hướng dẫn chuẩn bị khám da liễu",
+    "instructions": [
+      "Không bôi kem dưỡng, kem nền, phấn hoặc bất kỳ mỹ phẩm nào lên vùng da cần khám trước buổi hẹn.",
+      "Không tẩy trang bằng sản phẩm có cồn lên vùng tổn thương da.",
+      "Chụp ảnh tổn thương da tại nhà (nếu có) để đối chiếu với tình trạng tại thời điểm khám.",
+      "Mang theo tất cả sản phẩm chăm sóc da, kem bôi hoặc thuốc đang dùng để bác sĩ xem.",
+      "Liệt kê các dị nguyên đã biết (xà phòng, mỹ phẩm, kim loại...) và thức ăn nghi gây dị ứng.",
+      "Mặc quần áo rộng, dễ vén để bác sĩ có thể kiểm tra toàn thân nếu cần.",
+      "Test áp da (patch test): cần nhịn bôi thuốc lên vùng lưng 48-72 tiếng theo hướng dẫn cụ thể."
+    ],
+    "duration": "Không cần nhịn ăn. Đến sạch, không bôi mỹ phẩm lên vùng khám",
+    "notes": "Nếu nghi ung thư da hoặc có tổn thương da thay đổi nhanh (lớn hơn, loét, chảy máu), cần đặt lịch khám sớm và không trì hoãn. Mang theo ảnh chụp nối tiếp theo thời gian nếu có."
+  },
+  {
+    "id": "neurology",
+    "examType": "neurology",
+    "title": "Hướng dẫn chuẩn bị khám thần kinh",
+    "instructions": [
+      "Ghi chép chi tiết triệu chứng: vị trí đau, tính chất (nhói, âm ỉ, bỏng rát), tần suất, thời điểm xuất hiện, yếu tố làm nặng/nhẹ hơn.",
+      "Nhật ký đau đầu: ghi lại ít nhất 4 tuần trước nếu bị đau đầu mãn tính (ngày, giờ, cường độ 1-10, thuốc đã dùng).",
+      "Mang theo tất cả kết quả chụp CT/MRI não cũ và điện não đồ (EEG) nếu có.",
+      "Liệt kê đầy đủ thuốc đang dùng, bao gồm thuốc bổ, vitamin, thảo dược.",
+      "Không uống rượu bia trong 24 tiếng trước khi làm điện não đồ (EEG).",
+      "Nếu làm EEG: gội đầu sạch, không dùng dầu xịt tóc hoặc gel vuốt tóc.",
+      "Có người thân đi cùng để cung cấp thêm thông tin về các cơn co giật hoặc mất ý thức mà bệnh nhân không nhớ được."
+    ],
+    "duration": "Không cần nhịn ăn. EEG: gội đầu sạch, không dùng sản phẩm tóc",
+    "notes": "Nếu xuất hiện liệt nửa người đột ngột, méo miệng, nói ngọng, mắt mờ hoặc đau đầu dữ dội chưa từng có: đây là dấu hiệu đột quỵ, cần gọi cấp cứu 115 ngay lập tức, không tự đến phòng khám."
+  },
+  {
+    "id": "bone-density",
+    "examType": "bone-density",
+    "title": "Hướng dẫn chuẩn bị đo mật độ xương (DEXA)",
+    "instructions": [
+      "Không uống thuốc canxi hoặc bổ sung canxi trong 24 tiếng trước khi đo.",
+      "Tháo toàn bộ đồ kim loại: trang sức, kẹp tóc, thắt lưng có khóa kim loại.",
+      "Mặc quần áo thoải mái, không có khóa kéo hoặc nút kim loại.",
+      "Không cần nhịn ăn, ăn uống bình thường.",
+      "Thông báo nếu gần đây có chụp CT/MRI có tiêm cản quang Barium (cần chờ ít nhất 7 ngày).",
+      "Thông báo nếu đang mang thai hoặc nghi ngờ có thai.",
+      "Mang theo kết quả đo mật độ xương cũ (nếu có) để so sánh T-score và Z-score."
+    ],
+    "duration": "Không cần nhịn ăn. Thời gian đo khoảng 10-20 phút",
+    "notes": "DEXA sử dụng liều phóng xạ rất thấp (thấp hơn nhiều so với X-quang thường), an toàn để thực hiện hàng năm. Phụ nữ sau mãn kinh và nam trên 70 tuổi nên đo định kỳ mỗi 1-2 năm."
   }
 ]

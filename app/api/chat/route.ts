@@ -16,6 +16,9 @@ import {
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+const MAX_MESSAGES = 20;
+const MAX_MSG_CHARS = 2000;
+
 /**
  * Normalize messages: accept both AI SDK v6 UIMessage (parts[]) format
  * and legacy simple format ({ role, content }) from test scripts.
@@ -30,11 +33,21 @@ function normalizeMessages(raw: unknown[]): Omit<UIMessage, "id">[] {
 
     // Already in UIMessage parts format
     if (Array.isArray(m.parts)) {
+      const totalText = (m.parts as Array<{ type: string; text?: string }>)
+        .filter((p) => p.type === "text")
+        .map((p) => p.text ?? "")
+        .join("");
+      if (totalText.length > MAX_MSG_CHARS) {
+        throw new Error(`Tin nhắn quá dài (tối đa ${MAX_MSG_CHARS} ký tự)`);
+      }
       return { role, parts: m.parts as UIMessage["parts"] };
     }
 
     // Legacy { role, content: string } format
     if (typeof m.content === "string") {
+      if (m.content.length > MAX_MSG_CHARS) {
+        throw new Error(`Tin nhắn quá dài (tối đa ${MAX_MSG_CHARS} ký tự)`);
+      }
       return {
         role,
         parts: [{ type: "text" as const, text: m.content }],
@@ -47,6 +60,9 @@ function normalizeMessages(raw: unknown[]): Omit<UIMessage, "id">[] {
         .filter((c) => c.type === "text")
         .map((c) => c.text ?? "")
         .join("");
+      if (textContent.length > MAX_MSG_CHARS) {
+        throw new Error(`Tin nhắn quá dài (tối đa ${MAX_MSG_CHARS} ký tự)`);
+      }
       return {
         role,
         parts: [{ type: "text" as const, text: textContent }],
@@ -92,6 +108,13 @@ export async function POST(req: Request) {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  if (messages.length > MAX_MESSAGES) {
+    return new Response(
+      JSON.stringify({ error: `Tối đa ${MAX_MESSAGES} tin nhắn mỗi lần gửi` }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
   }
 
   // Inject ngày hiện tại VN (UTC+7) để agent biết hôm nay là ngày mấy

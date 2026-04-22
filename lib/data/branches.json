@@ -68,5 +68,35 @@
     "lat": 20.8446,
     "lng": 106.6881,
     "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
+  },
+  {
+    "id": "smart-city",
+    "name": "Vinmec Smart City",
+    "address": "Khu đô thị Vinhomes Smart City, Nam Từ Liêm, Hà Nội",
+    "city": "Hà Nội",
+    "phone": "024 3975 4488",
+    "lat": 21.0277,
+    "lng": 105.7667,
+    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "than-kinh", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
+  },
+  {
+    "id": "ocean-park",
+    "name": "Vinmec Ocean Park",
+    "address": "Khu đô thị Vinhomes Ocean Park, Gia Lâm, Hà Nội",
+    "city": "Hà Nội",
+    "phone": "024 3976 6699",
+    "lat": 20.9803,
+    "lng": 105.9337,
+    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
+  },
+  {
+    "id": "can-tho",
+    "name": "Vinmec Cần Thơ",
+    "address": "100 Trần Hưng Đạo, Ninh Kiều, Cần Thơ",
+    "city": "Cần Thơ",
+    "phone": "0292 3888 999",
+    "lat": 10.0453,
+    "lng": 105.7469,
+    "services": ["noi-tong-quat", "tieu-hoa", "tim-mach", "ho-hap", "co-xuong-khop", "da-lieu", "mat", "tai-mui-hong", "nhi-khoa"]
   }
 ]
