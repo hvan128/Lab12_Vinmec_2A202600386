@@ -11,7 +11,10 @@ import {
   checkBudget,
   recordUsage,
   budgetErrorResponse,
+  estimateRequestInputTokens,
+  estimateOutputTokens,
 } from "@/lib/costGuard";
+import { tracer, calcLLMCost, SpanStatusCode } from "@/lib/tracing";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -58,16 +61,14 @@ function normalizeMessages(raw: unknown[]): Omit<UIMessage, "id">[] {
 }
 
 export async function POST(req: Request) {
-  // ── Lab 12: Auth + Rate limit + Cost guard ──────────────
+  // ── Lab 12: Auth + Rate limit ────────────────────────────
   const auth = verifyApiKey(req);
   if (!auth.ok) return authErrorResponse(auth);
 
   const rl = checkRateLimit(auth.keyId);
   if (!rl.ok) return rateLimitErrorResponse(rl);
 
-  const budget = checkBudget(auth.keyId);
-  if (!budget.ok) return budgetErrorResponse(budget);
-
+  // Parse body before budget check (need messages for token estimation)
   let body: { messages?: unknown[]; userId?: string };
   try {
     body = await req.json();
@@ -121,6 +122,41 @@ export async function POST(req: Request) {
           .join("")
       : "";
 
+  // ── Cost guard (accurate estimate from actual content) ──
+  const messagesContentLength = messages
+    .map((m) => {
+      const msg = m as Record<string, unknown>;
+      if (typeof msg.content === "string") return msg.content.length;
+      if (Array.isArray(msg.content)) {
+        return (msg.content as Array<{ type: string; text?: string }>)
+          .filter((c) => c.type === "text")
+          .map((c) => c.text ?? "")
+          .join("").length;
+      }
+      return 0;
+    })
+    .reduce((sum, len) => sum + len, 0);
+
+  const estInputTokens = estimateRequestInputTokens(
+    systemWithUser.length,
+    messagesContentLength,
+  );
+  const estOutputTokens = estimateOutputTokens(userQuery.length);
+
+  const budgetCheck = checkBudget(auth.keyId, estInputTokens, estOutputTokens);
+  if (!budgetCheck.ok) return budgetErrorResponse(budgetCheck);
+
+  // ── LLM call with tracing span ───────────────────────────
+  const llmSpan = tracer.startSpan("llm.agent", {
+    attributes: {
+      "llm.model": AGENT_CONFIG.model,
+      "llm.est_input_tokens": estInputTokens,
+      "llm.est_output_tokens": estOutputTokens,
+      "llm.user_id": userId,
+      "llm.messages_count": messages.length,
+    },
+  });
+
   const result = streamText({
     model: openai(AGENT_CONFIG.model),
     system: systemWithUser,
@@ -128,7 +164,8 @@ export async function POST(req: Request) {
     tools,
     stopWhen: stepCountIs(AGENT_CONFIG.maxSteps),
     temperature: AGENT_CONFIG.temperature,
-    onError: (e) => {
+    onError: (e: unknown) => {
+      llmSpan.recordException(e as Error);
       console.error("[chat] stream error:", e);
     },
   });
@@ -138,12 +175,33 @@ export async function POST(req: Request) {
     .then(([botText, calls, usage]) => {
       const toolNames = calls.map((c) => c.toolName);
       scoreAsync(userId, userQuery, botText, toolNames);
+
       if (usage && typeof usage === "object") {
         const u = usage as { inputTokens?: number; outputTokens?: number };
-        recordUsage(auth.keyId, u.inputTokens ?? 0, u.outputTokens ?? 0);
+        const inputTokens = u.inputTokens ?? 0;
+        const outputTokens = u.outputTokens ?? 0;
+        const cost = calcLLMCost(inputTokens, outputTokens);
+
+        llmSpan.setAttributes({
+          "llm.input_tokens": inputTokens,
+          "llm.output_tokens": outputTokens,
+          "llm.total_tokens": inputTokens + outputTokens,
+          "llm.cost_usd": cost,
+          "llm.tools_called": calls.length,
+        });
+
+        recordUsage(auth.keyId, inputTokens, outputTokens);
       }
+
+      llmSpan.setStatus({ code: SpanStatusCode.OK });
+      llmSpan.end();
     })
-    .catch((e) => console.error("[chat] post-stream error:", e));
+    .catch((e) => {
+      llmSpan.setStatus({ code: SpanStatusCode.ERROR, message: (e as Error).message });
+      llmSpan.recordException(e as Error);
+      llmSpan.end();
+      console.error("[chat] post-stream error:", e);
+    });
 
   return result.toUIMessageStreamResponse();
 }
